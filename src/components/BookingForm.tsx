@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
+import { DateField, TimeField } from "./DateField";
 import { AlertTriangle, CheckCircle2, FileText, ImageIcon, Loader2, Trash2, Upload, X } from "lucide-react";
 import { saveBooking, checkAvailability, deleteBookingFile, type Conflict, type FileLink } from "@/lib/actions";
 import { prepareFile, uploadBookingFiles, fmtSize } from "@/lib/upload";
@@ -198,16 +199,16 @@ export function BookingForm({
             {room?.capacity_alt && <p className="mt-1 text-xs text-muted">{room.capacity_alt}</p>}
           </Cell>
           <Cell n={2} label="Бошланиш санаси" error={errors.start_date}>
-            <input type="date" className="field-input" required value={v.start_date} onChange={(e) => { set("start_date", e.target.value); if (!v.end_date || v.end_date < e.target.value) set("end_date", e.target.value); }} aria-invalid={!!errors.start_date} />
+            <DateField label="Бошланиш санаси" required value={v.start_date} onChange={(d) => { set("start_date", d); if (!v.end_date || v.end_date < d) set("end_date", d); }} invalid={!!errors.start_date} />
           </Cell>
           <Cell n={3} label="Бошланиш соати" error={errors.start_time}>
-            <input type="time" step={900} min="07:00" max="22:00" className="field-input" required value={v.start_time} onChange={(e) => set("start_time", e.target.value)} aria-invalid={!!errors.start_time} />
+            <TimeField label="Бошланиш соати" from="07:00" to="22:00" value={v.start_time} onChange={(t) => set("start_time", t)} invalid={!!errors.start_time} />
           </Cell>
           <Cell n={4} label="Тугаш санаси" error={errors.end_date}>
-            <input type="date" className="field-input" required min={v.start_date} value={v.end_date} onChange={(e) => set("end_date", e.target.value)} aria-invalid={!!errors.end_date} />
+            <DateField label="Тугаш санаси" required min={v.start_date} value={v.end_date} onChange={(d) => set("end_date", d)} invalid={!!errors.end_date} />
           </Cell>
           <Cell n={5} label="Тугаш соати" error={errors.end_time}>
-            <input type="time" step={900} min="07:00" max="23:00" className="field-input" required value={v.end_time} onChange={(e) => set("end_time", e.target.value)} aria-invalid={!!errors.end_time} />
+            <TimeField label="Тугаш соати" from="07:00" to="23:00" value={v.end_time} onChange={(t) => set("end_time", t)} invalid={!!errors.end_time} />
           </Cell>
 
           <Cell n={6} label="Банд қилган ташкилот номи" error={errors.organization} className="xl:col-span-2">
