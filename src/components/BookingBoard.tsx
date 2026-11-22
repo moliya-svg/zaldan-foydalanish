@@ -3,10 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { ChevronLeft, ChevronRight, Printer, Search, Rows3, Building2, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, Printer, Search, Rows3, Building2, CalendarDays, Pencil, Trash2, Ban } from "lucide-react";
 import { MONTHS, MONTHS_SHORT, WEEKDAYS_SHORT, daysInMonth, weekday, occupiedDays, toSegments, slotsOnDay, tkDate, tkTime, todayTk } from "@/lib/dates";
 import { bookingColor } from "@/lib/colors";
-import { formatPhone } from "@/lib/phone";
 import type { Booking, Room, Viewer } from "@/lib/types";
 import { BookingDrawer } from "./BookingDrawer";
 
@@ -20,6 +19,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
   const [q, setQ] = useState("");
   const [roomFilter, setRoomFilter] = useState(sp.get("room") ?? "");
   const [openId, setOpenId] = useState<string | null>(sp.get("open"));
+  const [startWith, setStartWith] = useState<"cancel" | "delete" | null>(null);
   const n = daysInMonth(year, month);
   const today = todayTk();
   const todayCol = today.y === year && today.m === month ? today.d : null;
@@ -47,7 +47,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
     const s = q.trim().toLowerCase();
     return bookings.filter((b) =>
       (!roomFilter || b.room_id === roomFilter) &&
-      (!s || [b.organization, b.event_title, b.contact_name, b.contact_phone, b.room_name, String(b.seq_no)].some((x) => x.toLowerCase().includes(s))),
+      (!s || [b.organization, b.event_title, b.contact_name, b.contact_phone, b.room_name, String(b.seq_no)].some((x) => x?.toLowerCase().includes(s))),
     );
   }, [bookings, q, roomFilter]);
 
@@ -57,7 +57,8 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
   }, [month]);
 
   const open = bookings.find((b) => b.id === openId) ?? null;
-  const setOpen = (id: string | null) => {
+  const setOpen = (id: string | null, action: "cancel" | "delete" | null = null) => {
+    setStartWith(action);
     setOpenId(id);
     const p = new URLSearchParams(window.location.search);
     id ? p.set("open", id) : p.delete("open");
@@ -66,7 +67,9 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
 
   const dayHeads = Array.from({ length: n }, (_, i) => i + 1);
   const isWeekend = (d: number) => weekday(year, month, d) >= 5;
-  const cols = `var(--left) repeat(${n}, minmax(var(--day), 1fr))`;
+  const showActions = view === "bookings" && viewer.isAdmin;
+  const cols = `var(--left) repeat(${n}, minmax(var(--day), 1fr))${showActions ? " var(--act)" : ""}`;
+  const canEdit = (b: Booking) => viewer.isSuperAdmin || (viewer.isAdmin && b.created_by === viewer.id);
 
   return (
     <div className="space-y-4">
@@ -120,15 +123,16 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
       </div>
 
       {/* Жадвал */}
-      <div className="card overflow-x-auto [--day:24px] [--left:190px] sm:[--left:300px] lg:[--left:440px] xl:[--day:26px]" style={{ WebkitOverflowScrolling: "touch" }}>
+      <div className="card overflow-x-auto [--act:64px] sm:[--act:76px] [--day:24px] [--left:190px] sm:[--left:300px] lg:[--left:460px] xl:[--day:26px]" style={{ WebkitOverflowScrolling: "touch" }}>
         <div className="min-w-fit">
           {/* Сарлавҳа */}
           <div className="sticky top-0 z-20 grid border-b border-line bg-surface text-xs" style={{ gridTemplateColumns: cols }}>
             <div className="sticky left-0 z-10 flex items-end bg-surface px-2 py-2 font-semibold text-muted shadow-[1px_0_0_var(--line)]">
               {view === "bookings" ? (
                 <div className="flex w-full gap-2">
-                  <span className="w-8">№</span><span className="flex-1">Ф.И.Ш.</span>
-                  <span className="hidden w-32 sm:block">Телефон</span><span className="hidden w-28 lg:block">Зал / хона</span>
+                  <span className="w-7 shrink-0">№</span>
+                  <span className="flex-1 sm:w-28 sm:flex-none lg:w-44">Зал / хона<span className="sm:hidden"> · Тадбир</span></span>
+                  <span className="hidden flex-1 sm:block">Тадбир</span>
                 </div>
               ) : <span>Зал / хона</span>}
             </div>
@@ -138,6 +142,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                 <span className="font-bold tabular-nums">{d}</span>
               </div>
             ))}
+            {showActions && <div className="no-print sticky right-0 z-10 flex items-end justify-center bg-surface px-1 py-2 font-semibold text-muted shadow-[-1px_0_0_var(--line)]">Амаллар</div>}
           </div>
 
           {view === "bookings" ? (
@@ -153,14 +158,15 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                 return (
                   <div key={b.id} className="group grid border-b border-line text-sm last:border-b-0 hover:bg-canvas/60" style={{ gridTemplateColumns: cols }}>
                     <button onClick={() => setOpen(b.id)} className="sticky left-0 z-10 flex items-center gap-2 bg-surface px-2 py-1.5 text-left shadow-[1px_0_0_var(--line)] group-hover:bg-canvas" style={{ gridRow: 1, gridColumn: 1 }}>
-                      <span className="w-8 shrink-0 font-semibold tabular-nums text-muted">{idx + 1}</span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate font-medium">{b.contact_name}</span>
-                        <span className="block truncate text-xs text-muted sm:hidden">{b.room_name}</span>
-                        <span className="hidden truncate text-xs text-muted sm:block lg:hidden">{b.room_name}</span>
+                      <span className="w-7 shrink-0 font-semibold tabular-nums text-muted">{idx + 1}</span>
+                      <span className="min-w-0 flex-1 sm:w-28 sm:flex-none lg:w-44">
+                        <span className="block truncate font-medium">{b.room_name}</span>
+                        <span className="block truncate text-xs text-muted sm:hidden">{b.event_title}</span>
                       </span>
-                      <span className="hidden w-32 shrink-0 truncate text-xs tabular-nums sm:block">{formatPhone(b.contact_phone)}</span>
-                      <span className="hidden w-28 shrink-0 truncate text-xs lg:block">{b.room_name}</span>
+                      <span className="hidden min-w-0 flex-1 sm:block">
+                        <span className="block truncate font-medium">{b.event_title}</span>
+                        <span className="block truncate text-xs text-muted">{b.organization}</span>
+                      </span>
                     </button>
                     {dayHeads.map((d) => (
                       <div key={d} className={clsx("min-h-11 border-l border-line/60", isWeekend(d) && "bg-weekend", d === todayCol && "!bg-gold-100/60")} style={{ gridRow: 1, gridColumn: d + 1 }} />
@@ -176,6 +182,24 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                         {i === segs.length - 1 && after && <span className="ml-auto">›</span>}
                       </button>
                     ))}
+                    {showActions && (
+                      <div className="no-print sticky right-0 z-10 flex items-center justify-center gap-0.5 bg-surface px-1 shadow-[-1px_0_0_var(--line)] group-hover:bg-canvas" style={{ gridRow: 1, gridColumn: n + 2 }}>
+                        {canEdit(b) && b.status === "confirmed" && (
+                          <Link href={`/kiritish?edit=${b.id}`} className="rounded-md p-1.5 text-brand-800 hover:bg-brand-50 dark:text-brand-100 dark:hover:bg-brand-950" title="Таҳрирлаш" aria-label={`№${idx + 1} бронни таҳрирлаш`}>
+                            <Pencil className="size-4" />
+                          </Link>
+                        )}
+                        {viewer.isSuperAdmin ? (
+                          <button onClick={() => setOpen(b.id, "delete")} className="rounded-md p-1.5 text-danger hover:bg-red-50 dark:hover:bg-red-950" title="Ўчириш" aria-label={`№${idx + 1} бронни ўчириш`}>
+                            <Trash2 className="size-4" />
+                          </button>
+                        ) : canEdit(b) && b.status === "confirmed" ? (
+                          <button onClick={() => setOpen(b.id, "cancel")} className="rounded-md p-1.5 text-danger hover:bg-red-50 dark:hover:bg-red-950" title="Бекор қилиш" aria-label={`№${idx + 1} бронни бекор қилиш`}>
+                            <Ban className="size-4" />
+                          </button>
+                        ) : null}
+                      </div>
+                    )}
                   </div>
                 );
               })
@@ -223,7 +247,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
         </p>
       )}
 
-      <BookingDrawer booking={open} viewer={viewer} onClose={() => setOpen(null)} />
+      <BookingDrawer booking={open} viewer={viewer} startWith={startWith} onClose={() => setOpen(null)} />
     </div>
   );
 }

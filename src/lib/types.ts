@@ -25,8 +25,8 @@ export interface Booking {
   skip_weekends: boolean;
   organization: string;
   event_title: string;
-  contact_name: string;
-  contact_phone: string;
+  contact_name: string | null;
+  contact_phone: string | null;
   note: string | null;
   attendees: number | null;
   color: string | null;

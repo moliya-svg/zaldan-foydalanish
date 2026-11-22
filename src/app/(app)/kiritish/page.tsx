@@ -42,8 +42,8 @@ export default async function KiritishPage({ searchParams }: { searchParams: Pro
       initial = {
         room_id: b.room_id, start_date: tkDate(b.starts_at), start_time: tkTime(b.starts_at),
         end_date: tkDate(b.ends_at), end_time: tkTime(b.ends_at), time_mode: b.time_mode, skip_weekends: b.skip_weekends,
-        organization: b.organization, event_title: b.event_title, contact_name: b.contact_name,
-        contact_phone: formatPhone(b.contact_phone), note: b.note ?? "", attendees: b.attendees ? String(b.attendees) : "",
+        organization: b.organization, event_title: b.event_title, contact_name: b.contact_name ?? "",
+        contact_phone: b.contact_phone ? formatPhone(b.contact_phone) : "", note: b.note ?? "", attendees: b.attendees ? String(b.attendees) : "",
         color: b.color ?? "",
       };
       if (sp.edit) {
@@ -56,7 +56,7 @@ export default async function KiritishPage({ searchParams }: { searchParams: Pro
   const organizations = [...new Set((orgRes.data ?? []).map((r) => r.organization))].slice(0, 100);
   type Recent = {
     id: string; seq_no: number; starts_at: string; ends_at: string; organization: string; event_title: string;
-    contact_name: string; contact_phone: string; note: string | null; color: string | null; status: string;
+    contact_name: string | null; contact_phone: string | null; note: string | null; color: string | null; status: string;
     rooms: { name: string } | null; booking_files: { kind: string }[];
   };
   const recent = (recentRes.data ?? []) as unknown as Recent[];
@@ -103,8 +103,8 @@ export default async function KiritishPage({ searchParams }: { searchParams: Pro
                     <td className="px-3 py-2">{tkTime(b.ends_at)}</td>
                     <td className="max-w-48 truncate px-3 py-2">{b.organization}</td>
                     <td className="max-w-40 truncate px-3 py-2">{b.event_title}</td>
-                    <td className="whitespace-nowrap px-3 py-2">{b.contact_name}</td>
-                    <td className="whitespace-nowrap px-3 py-2">{formatPhone(b.contact_phone)}</td>
+                    <td className="whitespace-nowrap px-3 py-2">{b.contact_name ?? "—"}</td>
+                    <td className="whitespace-nowrap px-3 py-2">{b.contact_phone ? formatPhone(b.contact_phone) : "—"}</td>
                     <td className="max-w-40 truncate px-3 py-2 text-muted">{b.note}</td>
                     <td className="px-3 py-2 text-center">{b.booking_files.filter((f) => f.kind === "pdf").length || "—"}</td>
                     <td className="px-3 py-2 text-center">{b.booking_files.filter((f) => f.kind === "jpeg").length || "—"}</td>

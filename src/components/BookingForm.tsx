@@ -218,12 +218,12 @@ export function BookingForm({
             <input className="field-input" required maxLength={200} list="events" placeholder="Семинар, ўқув курси…" value={v.event_title} onChange={(e) => set("event_title", e.target.value)} aria-invalid={!!errors.event_title} />
             <datalist id="events">{EVENT_TYPES.map((o) => <option key={o} value={o} />)}</datalist>
           </Cell>
-          <Cell n={8} label="Банд қилган Ф.И.Ш." error={errors.contact_name} className="xl:col-span-2">
-            <input className="field-input" required maxLength={120} autoComplete="name" placeholder="Фамилия Исм Шарифи" value={v.contact_name} onChange={(e) => set("contact_name", e.target.value)} aria-invalid={!!errors.contact_name} />
+          <Cell n={8} label="Банд қилган Ф.И.Ш. (ихтиёрий)" error={errors.contact_name} className="xl:col-span-2">
+            <input className="field-input" maxLength={120} autoComplete="name" placeholder="Фамилия Исм Шарифи" value={v.contact_name} onChange={(e) => set("contact_name", e.target.value)} aria-invalid={!!errors.contact_name} />
           </Cell>
 
-          <Cell n={9} label="Телефон рақами" error={errors.contact_phone} className="xl:col-span-2">
-            <input className="field-input" required inputMode="tel" autoComplete="tel" placeholder="+998 (__) ___-__-__" value={v.contact_phone} onChange={(e) => set("contact_phone", maskPhoneInput(e.target.value))} aria-invalid={!!errors.contact_phone} />
+          <Cell n={9} label="Телефон рақами (ихтиёрий)" error={errors.contact_phone} className="xl:col-span-2">
+            <input className="field-input" inputMode="tel" autoComplete="tel" placeholder="+998 (__) ___-__-__" value={v.contact_phone} onChange={(e) => set("contact_phone", maskPhoneInput(e.target.value))} aria-invalid={!!errors.contact_phone} />
           </Cell>
           <Cell n={10} label="Изоҳ" error={errors.note} className="xl:col-span-4">
             <textarea className="field-input min-h-[42px]" rows={1} maxLength={1000} placeholder="Қўшимча маълумот (ихтиёрий)" value={v.note} onChange={(e) => set("note", e.target.value)} />
