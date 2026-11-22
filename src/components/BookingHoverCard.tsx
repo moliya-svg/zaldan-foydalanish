@@ -34,6 +34,7 @@ export function BookingHoverCard({ hover }: { hover: Hover }) {
       <div className="px-4 py-3 text-white" style={{ background: color }}>
         <div className="text-xs font-semibold opacity-90">№ {b.seq_no} · {b.organization}</div>
         <div className="mt-0.5 text-lg font-bold leading-snug">{b.event_title}</div>
+        {b.event_topic && <div className="mt-0.5 text-sm leading-snug opacity-95"><span className="opacity-80">Мавзу:</span> {b.event_topic}</div>}
       </div>
       <dl className="space-y-2.5 px-4 py-3">
         <Line icon={<Building2 />} label="Зал / хона">{b.room_name}</Line>
@@ -47,7 +48,7 @@ export function BookingHoverCard({ hover }: { hover: Hover }) {
         {b.attendees ? <Line icon={<Users />} label="Иштирокчилар">{b.attendees} нафар</Line> : null}
         {b.note && <Line icon={<StickyNote />} label="Изоҳ"><span className="line-clamp-3">{b.note}</span></Line>}
         <Line icon={<PenLine />} label="Киритган">
-          <span className="text-sm">{b.created_by_email ?? "—"} · <span className="tabular-nums text-muted">{fmtDateTime(b.created_at)}</span></span>
+          <span className="text-sm">{b.created_by_name && <b className="font-semibold">{b.created_by_name} </b>}{b.created_by_email ?? "—"} · <span className="tabular-nums text-muted">{fmtDateTime(b.created_at)}</span></span>
         </Line>
       </dl>
       <div className="border-t border-line bg-canvas px-4 py-1.5 text-xs text-muted">Батафсил ва амаллар учун босинг</div>

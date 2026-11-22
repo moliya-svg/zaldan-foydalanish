@@ -26,3 +26,17 @@ describe("bookingSchema: Ф.И.Ш. ва телефон ихтиёрий", () => 
     expect(r.success).toBe(false);
   });
 });
+
+describe("bookingSchema: тадбир мавзуси ихтиёрий", () => {
+  it("бўш ёки берилмаса null бўлади", () => {
+    const a = bookingSchema.safeParse({ ...base, event_topic: "   " });
+    const b = bookingSchema.safeParse(base);
+    expect(a.success && a.data.event_topic).toBeNull();
+    expect(b.success && b.data.event_topic).toBeNull();
+  });
+  it("бўшлиқлари кесилади, 300 белгидан ошса рад этилади", () => {
+    const ok = bookingSchema.safeParse({ ...base, event_topic: "  Бюджет ижроси  " });
+    expect(ok.success && ok.data.event_topic).toBe("Бюджет ижроси");
+    expect(bookingSchema.safeParse({ ...base, event_topic: "а".repeat(301) }).success).toBe(false);
+  });
+});

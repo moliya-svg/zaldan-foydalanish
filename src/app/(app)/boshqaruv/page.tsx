@@ -12,13 +12,13 @@ export default async function BoshqaruvPage() {
   if (!viewer.isSuperAdmin) redirect("/korish");
   const supabase = await createClient();
   const [profiles, grants] = await Promise.all([
-    supabase.from("profiles").select("id, email, role, is_blocked, created_at").order("created_at"),
-    supabase.from("role_grants").select("email, role"),
+    supabase.from("profiles").select("id, email, full_name, role, is_blocked, created_at").order("created_at"),
+    supabase.from("role_grants").select("email, full_name, role"),
   ]);
 
   const rows: UserRow[] = (profiles.data ?? []).map((p) => ({ ...p, pending: false }));
   for (const g of grants.data ?? []) {
-    if (!rows.some((r) => r.email === g.email)) rows.push({ id: null, email: g.email, role: g.role, is_blocked: false, created_at: null, pending: true });
+    if (!rows.some((r) => r.email === g.email)) rows.push({ id: null, email: g.email, full_name: g.full_name, role: g.role, is_blocked: false, created_at: null, pending: true });
   }
 
   return (

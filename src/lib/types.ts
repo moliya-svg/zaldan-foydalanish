@@ -25,6 +25,7 @@ export interface Booking {
   skip_weekends: boolean;
   organization: string;
   event_title: string;
+  event_topic: string | null;
   contact_name: string | null;
   contact_phone: string | null;
   note: string | null;
@@ -34,6 +35,7 @@ export interface Booking {
   cancel_reason: string | null;
   created_by: string | null;
   created_by_email: string | null;
+  created_by_name: string | null;
   created_at: string;
   updated_at: string;
   /** [start, end) ISO pairs */

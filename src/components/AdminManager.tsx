@@ -1,24 +1,47 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ShieldPlus, Lock, Unlock, KeyRound, Wand2, Eye, EyeOff } from "lucide-react";
+import { Loader2, ShieldPlus, Lock, Unlock, KeyRound, Wand2, Eye, EyeOff, Pencil, Trash2, X } from "lucide-react";
 import clsx from "clsx";
-import { setUserRole, setUserBlocked, setUserPassword } from "@/lib/actions";
+import { setUserRole, setUserBlocked, setUserPassword, deleteUser } from "@/lib/actions";
 import type { Role } from "@/lib/types";
 
-export interface UserRow { id: string | null; email: string; role: Role; is_blocked: boolean; created_at: string | null; pending: boolean }
+export interface UserRow { id: string | null; email: string; full_name: string | null; role: Role; is_blocked: boolean; created_at: string | null; pending: boolean }
 
 const LABEL: Record<Role, string> = { super_admin: "Бош админ", admin: "Админ", viewer: "Фойдаланувчи" };
 
 export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
   const [pEmail, setPEmail] = useState("");
+  const [pName, setPName] = useState("");
   const [pPass, setPPass] = useState("");
   const [pRole, setPRole] = useState<"admin" | "viewer">("admin");
   const [showPass, setShowPass] = useState(true);
+  const [editing, setEditing] = useState<string | null>(null);
+
+  function startEdit(r: UserRow) {
+    setEditing(r.email);
+    setPEmail(r.email);
+    setPName(r.full_name ?? "");
+    setPRole(r.role === "viewer" ? "viewer" : "admin");
+    setPPass("");
+    setMsg(null);
+    document.getElementById("parol-berish")?.scrollIntoView({ behavior: "smooth" });
+  }
+  function stopEdit() {
+    setEditing(null);
+    setPEmail(""); setPName(""); setPPass("");
+  }
+  function remove(r: UserRow) {
+    const who = r.full_name ? `${r.full_name} (${r.email})` : r.email;
+    if (!window.confirm(`${who} ўчирилсинми?\n\nУ тизимга кира олмайди. Унинг киритган бронлари қолади. Буни ортга қайтариб бўлмайди.`)) return;
+    if (editing === r.email) stopEdit();
+    act(() => deleteUser(r.email), `${who} ўчирилди`);
+  }
 
   function genPassword() {
     const abc = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -41,23 +64,33 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
     <section className="card overflow-hidden">
       <div className="border-b border-line p-4">
         <h2 className="mb-2 font-semibold">Админ қўшиш</h2>
-        <form className="flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); act(() => setUserRole(email, "admin"), `${email} админ қилинди`); setEmail(""); }}>
-          <input type="email" required className="field-input max-w-sm flex-1" placeholder="e-mail манзил" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <form className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]" onSubmit={(e) => { e.preventDefault(); const em = email, nm = name; act(() => setUserRole(em, "admin", nm), `${em} админ қилинди`); setEmail(""); setName(""); }}>
+          <input type="email" required className="field-input" placeholder="e-mail манзил" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="field-input" maxLength={120} autoComplete="off" placeholder="Ф.И.Ш. (Фамилия Исм Шарифи)" value={name} onChange={(e) => setName(e.target.value)} />
           <button className="btn btn-primary" disabled={pending}>{pending ? <Loader2 className="size-4 animate-spin" /> : <ShieldPlus className="size-4" />}Админ қилиш</button>
         </form>
         <p className="mt-2 text-xs text-muted">Ҳали тизимга кирмаган e-mail ҳам қўшиш мумкин. У биринчи кирганда дарҳол админ бўлади.</p>
       </div>
       <div id="parol-berish" className="border-b border-line p-4">
-        <h2 className="mb-1 font-semibold">Пароль бериш</h2>
-        <p className="mb-2 text-xs text-muted">Фойдаланувчи почтага хат кутмасдан шу e-mail ва пароль билан киради. Ҳисоб йўқ бўлса, очилади. Бор бўлса, пароли янгиланади.</p>
-        <form className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]" onSubmit={(e) => {
+        <h2 className="mb-1 flex items-center gap-2 font-semibold">
+          {editing ? <>Таҳрирлаш: <span className="font-normal">{editing}</span>
+            <button type="button" onClick={stopEdit} className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted hover:bg-canvas"><X className="size-3.5" />Бекор қилиш</button></>
+            : "Пароль бериш"}
+        </h2>
+        <p className="mb-2 text-xs text-muted">Фойдаланувчи почтага хат кутмасдан шу e-mail ва пароль билан киради. Ҳисоб йўқ бўлса, очилади. Бор бўлса, пароли янгиланади. Фақат Ф.И.Ш.ни ўзгартириш учун паролни бўш қолдиринг.</p>
+        <form className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto_auto]" onSubmit={(e) => {
           e.preventDefault();
-          const em = pEmail, pw = pPass;
-          act(() => setUserPassword(em, pw, pRole), `${em} учун пароль сақланди. Паролни унга айтинг: ${pw}`);
+          const em = pEmail, pw = pPass, nm = pName;
+          start(async () => {
+            const r = await setUserPassword(em, pw, pRole, nm);
+            setMsg(r.ok ? { ok: true, text: pw ? `${em} учун пароль сақланди. Паролни унга айтинг: ${pw}` : `${em}: маълумотлар сақланди` } : { ok: false, text: r.message ?? "Хатолик" });
+            if (r.ok) { router.refresh(); if (editing) stopEdit(); }
+          });
         }}>
-          <input type="email" required className="field-input" placeholder="e-mail манзил" value={pEmail} onChange={(e) => setPEmail(e.target.value)} />
+          <input type="email" required readOnly={!!editing} className={clsx("field-input", editing && "bg-canvas text-muted")} placeholder="e-mail манзил" value={pEmail} onChange={(e) => setPEmail(e.target.value)} />
+          <input className="field-input" maxLength={120} autoComplete="off" placeholder="Ф.И.Ш. (Фамилия Исм Шарифи)" value={pName} onChange={(e) => setPName(e.target.value)} />
           <div className="relative">
-            <input type={showPass ? "text" : "password"} required minLength={8} className="field-input pr-16" placeholder="пароль (камида 8 белги)" autoComplete="new-password" value={pPass} onChange={(e) => setPPass(e.target.value)} />
+            <input type={showPass ? "text" : "password"} minLength={8} className="field-input pr-16" placeholder={editing ? "янги пароль (ўзгармаса бўш)" : "пароль (камида 8 белги)"} autoComplete="new-password" value={pPass} onChange={(e) => setPPass(e.target.value)} />
             <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-8 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:text-ink" aria-label={showPass ? "Яшириш" : "Кўрсатиш"}>{showPass ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
             <button type="button" onClick={genPassword} className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-brand-800 hover:bg-brand-50 dark:text-brand-100" title="Тасодифий пароль яратиш" aria-label="Тасодифий пароль яратиш"><Wand2 className="size-4" /></button>
           </div>
@@ -70,23 +103,23 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
         {msg && <p role="status" className={clsx("mt-2 text-sm", msg.ok ? "text-ok" : "text-danger")}>{msg.text}</p>}
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-sm">
+        <table className="w-full min-w-[760px] text-sm">
           <thead className="bg-brand-50 text-left text-xs text-brand-900 dark:bg-brand-950 dark:text-brand-100">
-            <tr><th className="px-4 py-2">E-mail</th><th className="px-4 py-2">Рол</th><th className="px-4 py-2">Ҳолат</th><th className="px-4 py-2 text-right">Амаллар</th></tr>
+            <tr><th className="px-4 py-2">Ф.И.Ш.</th><th className="px-4 py-2">E-mail</th><th className="px-4 py-2">Рол</th><th className="px-4 py-2">Ҳолат</th><th className="px-4 py-2 text-right">Амаллар</th></tr>
           </thead>
           <tbody>
             {sorted.map((r) => (
               <tr key={r.email} className="border-t border-line">
-                <td className="px-4 py-2 font-medium">{r.email}</td>
+                <td className="px-4 py-2 font-medium">{r.full_name || <span className="font-normal text-muted">—</span>}</td>
+                <td className="px-4 py-2">{r.email}</td>
                 <td className="px-4 py-2">
                   <span className={clsx("rounded-full px-2 py-0.5 text-xs font-semibold", r.role === "super_admin" ? "bg-gold-100 text-brand-950" : r.role === "admin" ? "bg-brand-50 text-brand-900 dark:bg-brand-950 dark:text-brand-100" : "bg-canvas text-muted")}>{LABEL[r.role]}</span>
                 </td>
                 <td className="px-4 py-2 text-xs text-muted">{r.pending ? "Ҳали кирмаган" : r.is_blocked ? "Блокланган" : "Фаол"}</td>
                 <td className="px-4 py-2 text-right">
                   <div className="inline-flex gap-2">
-                    <button className="btn btn-ghost !min-h-8 !px-2 !py-1" disabled={pending} title="Пароль бериш" aria-label={`${r.email}: пароль бериш`}
-                      onClick={() => { setPEmail(r.email); setPRole(r.role === "viewer" ? "viewer" : "admin"); setPPass(""); document.getElementById("parol-berish")?.scrollIntoView({ behavior: "smooth" }); }}>
-                      <KeyRound className="size-4" />
+                    <button className="btn btn-ghost !min-h-8 !px-2 !py-1" disabled={pending} title="Таҳрирлаш (Ф.И.Ш., рол, пароль)" aria-label={`${r.email}: таҳрирлаш`} onClick={() => startEdit(r)}>
+                      <Pencil className="size-4 text-brand-800 dark:text-brand-100" />
                     </button>
                   {r.role !== "super_admin" && (
                     <div className="inline-flex gap-2">
@@ -97,6 +130,11 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
                         <button className="btn btn-ghost !min-h-8 !px-2 !py-1" disabled={pending} title={r.is_blocked ? "Блокдан чиқариш" : "Блоклаш"} aria-label={r.is_blocked ? "Блокдан чиқариш" : "Блоклаш"}
                           onClick={() => act(() => setUserBlocked(r.id!, !r.is_blocked), r.is_blocked ? "Блокдан чиқарилди" : "Блокланди")}>
                           {r.is_blocked ? <Unlock className="size-4" /> : <Lock className="size-4 text-danger" />}
+                        </button>
+                      )}
+                      {r.id !== selfId && (
+                        <button className="btn btn-ghost !min-h-8 !px-2 !py-1" disabled={pending} title="Ўчириш" aria-label={`${r.email}: ўчириш`} onClick={() => remove(r)}>
+                          <Trash2 className="size-4 text-danger" />
                         </button>
                       )}
                     </div>
