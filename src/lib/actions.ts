@@ -136,10 +136,18 @@ export async function deleteBookingFile(fileId: string): Promise<{ ok: boolean; 
   return { ok: true };
 }
 
-export async function setUserRole(email: string, role: Exclude<Role, "super_admin">): Promise<{ ok: boolean; message?: string }> {
+export async function setUserRole(
+  email: string,
+  role: Exclude<Role, "super_admin">,
+  fullName?: string,
+): Promise<{ ok: boolean; message?: string }> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_user_role", { p_email: email, p_role: role });
   if (error) return { ok: false, message: error.message };
+  if (fullName !== undefined && fullName.trim()) {
+    const r = await supabase.rpc("set_user_name", { p_email: email, p_full_name: fullName });
+    if (r.error) return { ok: false, message: r.error.message };
+  }
   revalidatePath("/boshqaruv");
   return { ok: true };
 }
@@ -155,38 +163,83 @@ export async function setUserBlocked(userId: string, blocked: boolean): Promise<
 const MIN_PASSWORD = 8;
 
 /**
- * Бош админ фойдаланувчига пароль беради: бор бўлса паролини янгилайди,
+ * Бош админ фойдаланувчига пароль ва Ф.И.Ш. беради: бор бўлса янгилайди,
  * йўқ бўлса шу пароль билан ҳисоб очади (почтани тасдиқлаш шарт эмас).
+ * Пароль бўш бўлса, фақат рол ва Ф.И.Ш. сақланади.
  */
 export async function setUserPassword(
   email: string,
   password: string,
   role?: Exclude<Role, "super_admin">,
+  fullName?: string,
 ): Promise<{ ok: boolean; message?: string }> {
   const viewer = await getViewer();
   if (!viewer?.isSuperAdmin) return { ok: false, message: "Фақат бош админ пароль бера олади." };
   const e = email.trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return { ok: false, message: "E-mail нотўғри." };
-  if (password.length < MIN_PASSWORD) return { ok: false, message: `Пароль камида ${MIN_PASSWORD} белгидан иборат бўлсин.` };
+  const name = fullName?.trim() ?? "";
+  if (name.length > 120) return { ok: false, message: "Ф.И.Ш. 120 белгидан ошмасин." };
+  if (password && password.length < MIN_PASSWORD) return { ok: false, message: `Пароль камида ${MIN_PASSWORD} белгидан иборат бўлсин.` };
+
+  const supabase = await createClient();
+  const { data: existing } = await supabase.from("profiles").select("id").eq("email", e).maybeSingle();
+  if (!password) {
+    if (!name) return { ok: false, message: "Пароль ёки Ф.И.Ш. киритинг." };
+    if (role && e !== viewer.email.toLowerCase()) {
+      const { error } = await supabase.rpc("set_user_role", { p_email: e, p_role: role });
+      if (error) return { ok: false, message: error.message };
+    } else if (!existing?.id) {
+      return { ok: false, message: "Бундай фойдаланувчи йўқ. Пароль ҳам киритинг." };
+    }
+    const { error } = await supabase.rpc("set_user_name", { p_email: e, p_full_name: name });
+    if (error) return { ok: false, message: error.message };
+    revalidatePath("/boshqaruv");
+    return { ok: true };
+  }
 
   const admin = createAdminClient();
   if (!admin) return { ok: false, message: "Серверда SUPABASE_SERVICE_ROLE_KEY созланмаган. Vercel → Settings → Environment Variables." };
 
-  const supabase = await createClient();
   // Рол аввал ёзилади: янги ҳисоб очилганда триггер шу ролни олади
   if (role && e !== viewer.email.toLowerCase()) {
     const { error } = await supabase.rpc("set_user_role", { p_email: e, p_role: role });
     if (error) return { ok: false, message: error.message };
   }
 
-  const { data: existing } = await supabase.from("profiles").select("id").eq("email", e).maybeSingle();
   if (existing?.id) {
     const { error } = await admin.auth.admin.updateUserById(existing.id, { password, email_confirm: true });
     if (error) return { ok: false, message: "Пароль сақланмади: " + error.message };
   } else {
-    const { error } = await admin.auth.admin.createUser({ email: e, password, email_confirm: true });
+    const { error } = await admin.auth.admin.createUser({ email: e, password, email_confirm: true, user_metadata: name ? { full_name: name } : undefined });
     if (error) return { ok: false, message: "Ҳисоб очилмади: " + error.message };
   }
+  if (name) {
+    const { error } = await supabase.rpc("set_user_name", { p_email: e, p_full_name: name });
+    if (error) return { ok: false, message: "Пароль сақланди, лекин Ф.И.Ш. сақланмади: " + error.message };
+  }
+  revalidatePath("/boshqaruv");
+  return { ok: true };
+}
+
+/** Бош админ фойдаланувчини ўчиради. Унинг бронлари қолади, «ким киритган» сақланади. */
+export async function deleteUser(email: string): Promise<{ ok: boolean; message?: string }> {
+  const viewer = await getViewer();
+  if (!viewer?.isSuperAdmin) return { ok: false, message: "Фақат бош админ ўчира олади." };
+  const e = email.trim().toLowerCase();
+  if (e === viewer.email.toLowerCase()) return { ok: false, message: "Ўзингизни ўчира олмайсиз." };
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase.from("profiles").select("id, role").eq("email", e).maybeSingle();
+  if (profile?.role === "super_admin") return { ok: false, message: "Бош админни ўчириб бўлмайди." };
+
+  if (profile?.id) {
+    const admin = createAdminClient();
+    if (!admin) return { ok: false, message: "Серверда SUPABASE_SERVICE_ROLE_KEY созланмаган." };
+    const { error } = await admin.auth.admin.deleteUser(profile.id);
+    if (error) return { ok: false, message: "Ўчирилмади: " + error.message };
+  }
+  const { error } = await supabase.rpc("delete_role_grant", { p_email: e });
+  if (error) return { ok: false, message: error.message };
   revalidatePath("/boshqaruv");
   return { ok: true };
 }

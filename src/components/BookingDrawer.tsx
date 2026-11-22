@@ -133,7 +133,7 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
         </dl>
 
         <p className="mt-4 px-5 text-xs text-muted">
-          {b.created_by_email ? `Киритган: ${b.created_by_email} · ` : ""}{fmtDateTime(b.created_at)}
+          {b.created_by_email ? `Киритган: ${b.created_by_name ? `${b.created_by_name} (${b.created_by_email})` : b.created_by_email} · ` : ""}{fmtDateTime(b.created_at)}
           {b.updated_at !== b.created_at && ` · ўзгартирилган: ${fmtDateTime(b.updated_at)}`}
         </p>
 

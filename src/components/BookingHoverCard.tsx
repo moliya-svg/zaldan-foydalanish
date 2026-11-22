@@ -48,7 +48,7 @@ export function BookingHoverCard({ hover }: { hover: Hover }) {
         {b.attendees ? <Line icon={<Users />} label="Иштирокчилар">{b.attendees} нафар</Line> : null}
         {b.note && <Line icon={<StickyNote />} label="Изоҳ"><span className="line-clamp-3">{b.note}</span></Line>}
         <Line icon={<PenLine />} label="Киритган">
-          <span className="text-sm">{b.created_by_email ?? "—"} · <span className="tabular-nums text-muted">{fmtDateTime(b.created_at)}</span></span>
+          <span className="text-sm">{b.created_by_name && <b className="font-semibold">{b.created_by_name} </b>}{b.created_by_email ?? "—"} · <span className="tabular-nums text-muted">{fmtDateTime(b.created_at)}</span></span>
         </Line>
       </dl>
       <div className="border-t border-line bg-canvas px-4 py-1.5 text-xs text-muted">Батафсил ва амаллар учун босинг</div>

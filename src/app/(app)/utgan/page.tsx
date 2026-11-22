@@ -80,7 +80,8 @@ export default async function UtganPage({ searchParams }: { searchParams: Promis
                   <td className="max-w-40 truncate px-3 py-2 text-muted" title={b.note ?? ""}>{b.note}</td>
                   <td className="px-3 py-2 text-center">{b.file_count || "—"}</td>
                   <td className="whitespace-nowrap px-3 py-2 text-xs leading-tight">
-                    <div className="font-medium">{b.created_by_email ?? "—"}</div>
+                    {b.created_by_name && <div className="font-semibold">{b.created_by_name}</div>}
+                    <div className={b.created_by_name ? "text-muted" : "font-medium"}>{b.created_by_email ?? "—"}</div>
                     <div className="tabular-nums text-muted">{fmtDateTime(b.created_at)}</div>
                   </td>
                 </tr>

@@ -35,6 +35,7 @@ export interface Booking {
   cancel_reason: string | null;
   created_by: string | null;
   created_by_email: string | null;
+  created_by_name: string | null;
   created_at: string;
   updated_at: string;
   /** [start, end) ISO pairs */
