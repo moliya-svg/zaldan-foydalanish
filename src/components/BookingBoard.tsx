@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
-import { ChevronLeft, ChevronRight, Printer, Search, Rows3, Building2, CalendarDays, Pencil, Trash2, Ban } from "lucide-react";
+import { ChevronLeft, ChevronRight, Printer, Search, Rows3, Building2, CalendarDays, Pencil, Trash2, Ban, CalendarPlus } from "lucide-react";
 import { MONTHS, MONTHS_SHORT, WEEKDAYS_SHORT, daysInMonth, weekday, occupiedDays, toSegments, slotsOnDay, tkDate, tkTime, todayTk } from "@/lib/dates";
 import { bookingColor } from "@/lib/colors";
 import type { Booking, Room, Viewer } from "@/lib/types";
@@ -84,7 +84,10 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
             <Link href={href({ y: year + 1 })} className="p-2 hover:bg-canvas" aria-label="Кейинги йил"><ChevronRight className="size-4" /></Link>
           </div>
           <Link href={href({ y: today.y, m: today.m })} className="btn btn-ghost !min-h-9 !py-1.5 text-sm">Бугун</Link>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            {viewer.isAdmin && (
+              <Link href="/kiritish" className="btn btn-primary no-print !min-h-9 !py-1.5 text-sm"><CalendarPlus className="size-4" />KIRITISH BRON</Link>
+            )}
             <div className="inline-flex rounded-lg border border-line p-0.5 text-sm" role="tablist">
               <Link href={href({ view: "bookings" })} role="tab" aria-selected={view === "bookings"} className={clsx("flex items-center gap-1.5 rounded-md px-2.5 py-1.5", view === "bookings" ? "bg-brand-900 text-white" : "text-muted")}>
                 <Rows3 className="size-4" /> Бронлар

@@ -32,7 +32,7 @@ export async function updateSession(request: NextRequest) {
   }
   if (user && path === "/login") {
     const to = request.nextUrl.clone();
-    to.pathname = "/";
+    to.pathname = "/korish";
     to.search = "";
     return NextResponse.redirect(to);
   }

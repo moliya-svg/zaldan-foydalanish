@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   if (token_hash) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ token_hash, type });
-    if (!error) return NextResponse.redirect(new URL("/", origin));
+    if (!error) return NextResponse.redirect(new URL("/korish", origin));
   }
   return NextResponse.redirect(new URL("/login?error=link", origin));
 }
