@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireViewer } from "@/lib/auth";
 import { getBookings } from "@/lib/data";
-import { fmtDate, tkTime, todayTk } from "@/lib/dates";
+import { fmtDate, fmtDateTime, tkTime, todayTk } from "@/lib/dates";
 import { formatPhone } from "@/lib/phone";
 import { bookingColor } from "@/lib/colors";
 
@@ -48,17 +48,17 @@ export default async function UtganPage({ searchParams }: { searchParams: Promis
           <span className="text-sm text-muted">{past.length} та тадбир</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1100px] text-sm">
+          <table className="w-full min-w-[1300px] text-sm">
             <thead className="bg-brand-50 text-left text-xs text-brand-900 dark:bg-brand-950 dark:text-brand-100">
               <tr>
-                {["№", "Зал / хона", "Бошланиш санаси", "Бошл. соати", "Тугаш санаси", "Туг. соати", "Ташкилот", "Тадбир", "Ф.И.Ш.", "Телефон", "Изоҳ", "Файл"].map((h) => (
+                {["№", "Зал / хона", "Бошланиш санаси", "Бошл. соати", "Тугаш санаси", "Туг. соати", "Ташкилот", "Тадбир", "Ф.И.Ш.", "Телефон", "Изоҳ", "Файл", "Ким киритган"].map((h) => (
                   <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {past.length === 0 && (
-                <tr><td colSpan={12} className="px-3 py-8 text-center text-muted">Бу йилда ўтган тадбир йўқ.</td></tr>
+                <tr><td colSpan={13} className="px-3 py-8 text-center text-muted">Бу йилда ўтган тадбир йўқ.</td></tr>
               )}
               {past.map((b) => (
                 <tr key={b.id} className="border-t border-line">
@@ -78,6 +78,10 @@ export default async function UtganPage({ searchParams }: { searchParams: Promis
                   <td className="whitespace-nowrap px-3 py-2">{b.contact_phone ? formatPhone(b.contact_phone) : "—"}</td>
                   <td className="max-w-40 truncate px-3 py-2 text-muted" title={b.note ?? ""}>{b.note}</td>
                   <td className="px-3 py-2 text-center">{b.file_count || "—"}</td>
+                  <td className="whitespace-nowrap px-3 py-2 text-xs leading-tight">
+                    <div className="font-medium">{b.created_by_email ?? "—"}</div>
+                    <div className="tabular-nums text-muted">{fmtDateTime(b.created_at)}</div>
+                  </td>
                 </tr>
               ))}
             </tbody>
