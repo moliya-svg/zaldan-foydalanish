@@ -8,6 +8,7 @@ import { MONTHS, MONTHS_SHORT, WEEKDAYS_SHORT, daysInMonth, weekday, occupiedDay
 import { bookingColor } from "@/lib/colors";
 import type { Booking, Room, Viewer } from "@/lib/types";
 import { BookingDrawer } from "./BookingDrawer";
+import { BookingHoverCard, type Hover } from "./BookingHoverCard";
 
 type View = "bookings" | "rooms";
 
@@ -21,6 +22,12 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
   const [openId, setOpenId] = useState<string | null>(sp.get("open"));
   const [startWith, setStartWith] = useState<"cancel" | "delete" | null>(null);
   const [widths, setWidths] = useColumnWidths();
+  const [hover, setHover] = useState<Hover>(null);
+  const hoverOn = (b: Booking) => ({
+    onMouseEnter: (e: React.MouseEvent) => { if (window.matchMedia("(hover: hover)").matches) setHover({ booking: b, x: e.clientX, y: e.clientY }); },
+    onMouseMove: (e: React.MouseEvent) => setHover((h) => (h && h.booking.id === b.id ? { booking: b, x: e.clientX, y: e.clientY } : h)),
+    onMouseLeave: () => setHover(null),
+  });
   const n = daysInMonth(year, month);
   const today = todayTk();
   const todayCol = today.y === year && today.m === month ? today.d : null;
@@ -182,8 +189,8 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                       <div key={d} className={clsx("min-h-11 border-l border-line/60", isWeekend(d) && "bg-weekend", d === todayCol && "!bg-gold-100/60")} style={{ gridRow: 1, gridColumn: d + 1 }} />
                     ))}
                     {segs.map((s, i) => (
-                      <button key={i} onClick={() => setOpen(b.id)}
-                        title={`${b.organization} · ${b.event_title} · ${b.room_name} · ${hours}`}
+                      <button key={i} onClick={() => { setHover(null); setOpen(b.id); }} {...hoverOn(b)}
+                        aria-label={`${b.organization} · ${b.event_title} · ${b.room_name} · ${hours}`}
                         className={clsx("z-[1] mx-0.5 my-1.5 flex items-center overflow-hidden whitespace-nowrap px-1.5 text-left text-[11px] font-semibold text-white shadow-sm transition hover:brightness-110 hover:ring-2 hover:ring-offset-1",
                           "rounded-md", i === 0 && before && "rounded-l-none", i === segs.length - 1 && after && "rounded-r-none")}
                         style={{ gridRow: 1, gridColumn: `${s.start + 1} / ${s.end + 2}`, background: color }}>
@@ -232,8 +239,8 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                     return (
                       <div key={d} className={clsx("flex min-h-11 flex-col justify-center gap-0.5 border-l border-line/60 p-0.5", isWeekend(d) && "bg-weekend", d === todayCol && "!bg-gold-100/60")}>
                         {on.slice(0, 3).map((b) => (
-                          <button key={b.id} onClick={() => setOpen(b.id)} className="h-2.5 w-full rounded-sm hover:ring-2 hover:ring-offset-1" style={{ background: bookingColor(b) }}
-                            title={`${b.organization} · ${slotsOnDay(b.slots, year, month, d).join(", ")}`} aria-label={`${b.organization}, ${d}-кун`} />
+                          <button key={b.id} onClick={() => { setHover(null); setOpen(b.id); }} {...hoverOn(b)} className="h-2.5 w-full rounded-sm hover:ring-2 hover:ring-offset-1" style={{ background: bookingColor(b) }}
+                            aria-label={`${b.organization}, ${d}-кун, ${slotsOnDay(b.slots, year, month, d).join(", ")}`} />
                         ))}
                         {on.length > 3 && <span className="text-center text-[9px] text-muted">+{on.length - 3}</span>}
                         {free && viewer.isAdmin && (
@@ -257,6 +264,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
         </p>
       )}
 
+      <BookingHoverCard hover={openId ? null : hover} />
       <BookingDrawer booking={open} viewer={viewer} startWith={startWith} onClose={() => setOpen(null)} />
     </div>
   );
