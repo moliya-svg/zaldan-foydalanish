@@ -167,11 +167,11 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                     <button onClick={() => setOpen(b.id)} className="sticky left-0 z-10 flex items-center gap-2 bg-surface px-2 py-1.5 text-left shadow-[1px_0_0_var(--line)] group-hover:bg-canvas" style={{ gridRow: 1, gridColumn: 1 }}>
                       <span className="w-7 shrink-0 font-semibold tabular-nums text-muted">{idx + 1}</span>
                       <span className="min-w-0 flex-1 sm:w-[var(--room)] sm:flex-none">
-                        <span className="block truncate font-medium">{b.room_name}</span>
+                        <span className={clsx("block break-words font-medium leading-tight", fit(widths.room))} title={b.room_name}>{b.room_name}</span>
                         <span className="block truncate text-xs text-muted sm:hidden">{b.event_title}</span>
                       </span>
                       <span className="hidden min-w-0 sm:block sm:w-[var(--event)] sm:flex-none">
-                        <span className="block truncate font-medium">{b.event_title}</span>
+                        <span className={clsx("block break-words font-medium leading-tight", fit(widths.event))} title={b.event_title}>{b.event_title}</span>
                         <span className="block truncate text-xs text-muted">{b.organization}</span>
                       </span>
                     </button>
@@ -268,6 +268,11 @@ function Empty({ canAdd }: { canAdd: boolean }) {
   );
 }
 
+
+/** Тор устунда шрифт кичраяди, матн эса кейинги қаторга ўтиб тўлиқ кўринади */
+function fit(w: number): string {
+  return w < 130 ? "text-[11px]" : w < 190 ? "text-xs" : "text-sm";
+}
 
 // ── Устун кенглиги: сичқонча/бармоқ билан суриш, браузерда эслаб қолинади ──
 type Widths = { room: number; event: number };
