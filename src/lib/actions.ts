@@ -46,6 +46,7 @@ export async function saveBooking(input: BookingInput, id?: string): Promise<Sav
       skip_weekends: v.skip_weekends,
       organization: v.organization,
       event_title: v.event_title,
+      event_topic: v.event_topic ?? "",
       contact_name: v.contact_name ?? "",
       contact_phone: v.contact_phone ?? "",
       note: v.note ?? "",

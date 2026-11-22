@@ -29,6 +29,8 @@ function daily(from: number, to: number, h1: string, h2: string, month = 11, ski
   return out;
 }
 
+const TOPICS = ["Давлат бюджети ижроси ҳисоботини тузиш тартиби", null, "Ғазначилик тизимида электрон тўловлар", "Бухгалтерия ҳисоби модули"];
+
 export function fixtureBookings(rooms: Room[]): Booking[] {
   const rows: [number, string, string, string, string, [string, string][], "daily" | "continuous"][] = [
     [0, "Молия академияси", "Бюджет ҳисоботи бўйича семинар", "Каримов Акмал Тўлқинович", "+998901234567", daily(3, 5, "09:00", "13:00"), "daily"],
@@ -43,7 +45,7 @@ export function fixtureBookings(rooms: Room[]): Booking[] {
   return rows.map(([ri, org, title, name, phone, slots, mode], i) => ({
     id: `b${i}`, seq_no: i + 1, room_id: rooms[ri].id, room_name: rooms[ri].name,
     starts_at: slots[0][0], ends_at: slots[slots.length - 1][1], time_mode: mode, skip_weekends: false,
-    organization: org, event_title: title, contact_name: name, contact_phone: phone, note: i === 0 ? "Проектор ва 2 та микрофон керак" : null,
+    organization: org, event_title: title, event_topic: TOPICS[i] ?? null, contact_name: name, contact_phone: phone, note: i === 0 ? "Проектор ва 2 та микрофон керак" : null,
     attendees: null, color: null, status: "confirmed", cancel_reason: null, created_by: "u1", created_by_email: "ilxomovb2023@gmail.com",
     created_at: "2026-11-01T10:00:00+05:00", updated_at: "2026-11-01T10:00:00+05:00", slots, file_count: 0,
   }));

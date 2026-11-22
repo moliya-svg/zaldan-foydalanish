@@ -16,7 +16,7 @@ function icsFor(b: Booking): string {
   const esc = (s: string) => s.replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
   const events = b.slots.map(([a, e], i) => [
     "BEGIN:VEVENT", `UID:${b.id}-${i}@zal`, `DTSTAMP:${z(new Date().toISOString())}`, `DTSTART:${z(a)}`, `DTEND:${z(e)}`,
-    `SUMMARY:${esc(`${b.event_title} — ${b.room_name}`)}`, `DESCRIPTION:${esc([b.organization, b.contact_name].filter(Boolean).join("\n"))}`, `LOCATION:${esc(b.room_name)}`, "END:VEVENT",
+    `SUMMARY:${esc(`${b.event_title} — ${b.room_name}`)}`, `DESCRIPTION:${esc([b.event_topic && `Мавзу: ${b.event_topic}`, b.organization, b.contact_name].filter(Boolean).join("\n"))}`, `LOCATION:${esc(b.room_name)}`, "END:VEVENT",
   ].join("\r\n"));
   return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ukuv markazi//Bron//UZ", ...events, "END:VCALENDAR"].join("\r\n");
 }
@@ -74,6 +74,7 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Брон №{b.seq_no}{b.status === "cancelled" && " · бекор қилинган"}</p>
             <h2 id="drawer-title" className="mt-1 text-xl font-bold leading-snug">{b.event_title}</h2>
+            {b.event_topic && <p className="mt-1 text-sm leading-snug text-muted"><span className="font-semibold">Мавзу:</span> {b.event_topic}</p>}
           </div>
           <button ref={closeRef} onClick={onClose} className="rounded-lg p-2 hover:bg-canvas" aria-label="Ёпиш"><X className="size-5" /></button>
         </div>

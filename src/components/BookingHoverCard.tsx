@@ -34,6 +34,7 @@ export function BookingHoverCard({ hover }: { hover: Hover }) {
       <div className="px-4 py-3 text-white" style={{ background: color }}>
         <div className="text-xs font-semibold opacity-90">№ {b.seq_no} · {b.organization}</div>
         <div className="mt-0.5 text-lg font-bold leading-snug">{b.event_title}</div>
+        {b.event_topic && <div className="mt-0.5 text-sm leading-snug opacity-95"><span className="opacity-80">Мавзу:</span> {b.event_topic}</div>}
       </div>
       <dl className="space-y-2.5 px-4 py-3">
         <Line icon={<Building2 />} label="Зал / хона">{b.room_name}</Line>

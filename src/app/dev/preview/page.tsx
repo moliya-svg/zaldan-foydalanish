@@ -14,7 +14,7 @@ export default async function Preview({ searchParams }: { searchParams: Promise<
   return (
     <AppShell viewer={fixtureViewer}>
       {sp.screen === "kiritish" ? (
-        <BookingForm rooms={rooms} userId={fixtureViewer.id} initial={{ room_id: rooms[0].id, start_date: "2026-11-24", start_time: "09:00", end_date: "2026-11-26", end_time: "13:00", time_mode: "daily", skip_weekends: false, organization: "", event_title: "", contact_name: "", contact_phone: "", note: "", attendees: "", color: "" }} />
+        <BookingForm rooms={rooms} userId={fixtureViewer.id} initial={{ room_id: rooms[0].id, start_date: "2026-11-24", start_time: "09:00", end_date: "2026-11-26", end_time: "13:00", time_mode: "daily", skip_weekends: false, organization: "", event_title: "", event_topic: "", contact_name: "", contact_phone: "", note: "", attendees: "", color: "" }} />
       ) : (
         <Suspense><BookingBoard year={2026} month={11} view={view} rooms={rooms} bookings={fixtureBookings(rooms)} viewer={fixtureViewer} /></Suspense>
       )}

@@ -48,17 +48,17 @@ export default async function UtganPage({ searchParams }: { searchParams: Promis
           <span className="text-sm text-muted">{past.length} та тадбир</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1300px] text-sm">
+          <table className="w-full min-w-[1450px] text-sm">
             <thead className="bg-brand-50 text-left text-xs text-brand-900 dark:bg-brand-950 dark:text-brand-100">
               <tr>
-                {["№", "Зал / хона", "Бошланиш санаси", "Бошл. соати", "Тугаш санаси", "Туг. соати", "Ташкилот", "Тадбир", "Ф.И.Ш.", "Телефон", "Изоҳ", "Файл", "Ким киритган"].map((h) => (
+                {["№", "Зал / хона", "Бошланиш санаси", "Бошл. соати", "Тугаш санаси", "Туг. соати", "Ташкилот", "Тадбир", "Тадбир мавзуси", "Ф.И.Ш.", "Телефон", "Изоҳ", "Файл", "Ким киритган"].map((h) => (
                   <th key={h} className="whitespace-nowrap px-3 py-2 font-semibold">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {past.length === 0 && (
-                <tr><td colSpan={13} className="px-3 py-8 text-center text-muted">Бу йилда ўтган тадбир йўқ.</td></tr>
+                <tr><td colSpan={14} className="px-3 py-8 text-center text-muted">Бу йилда ўтган тадбир йўқ.</td></tr>
               )}
               {past.map((b) => (
                 <tr key={b.id} className="border-t border-line">
@@ -74,6 +74,7 @@ export default async function UtganPage({ searchParams }: { searchParams: Promis
                   <td className="px-3 py-2">{tkTime(b.ends_at)}</td>
                   <td className="max-w-48 truncate px-3 py-2" title={b.organization}>{b.organization}</td>
                   <td className="max-w-48 truncate px-3 py-2" title={b.event_title}>{b.event_title}</td>
+                  <td className="max-w-56 truncate px-3 py-2 text-xs text-muted" title={b.event_topic ?? ""}>{b.event_topic ?? "—"}</td>
                   <td className="whitespace-nowrap px-3 py-2">{b.contact_name ?? "—"}</td>
                   <td className="whitespace-nowrap px-3 py-2">{b.contact_phone ? formatPhone(b.contact_phone) : "—"}</td>
                   <td className="max-w-40 truncate px-3 py-2 text-muted" title={b.note ?? ""}>{b.note}</td>

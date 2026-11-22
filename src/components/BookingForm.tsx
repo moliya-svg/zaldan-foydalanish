@@ -22,6 +22,7 @@ export interface FormValues {
   skip_weekends: boolean;
   organization: string;
   event_title: string;
+  event_topic: string;
   contact_name: string;
   contact_phone: string;
   note: string;
@@ -183,7 +184,7 @@ export function BookingForm({
       </div>
 
       <div className="grid gap-4 2xl:grid-cols-[1fr_340px]">
-        {/* 12 та алоҳида устун */}
+        {/* 13 та алоҳида устун */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           <Cell n={1} label="Зал / хона" error={errors.room_id} className="xl:col-span-2">
             <select className="field-input" required value={v.room_id} onChange={(e) => set("room_id", e.target.value)} aria-invalid={!!errors.room_id}>
@@ -219,14 +220,17 @@ export function BookingForm({
             <input className="field-input" required maxLength={200} list="events" placeholder="Семинар, ўқув курси…" value={v.event_title} onChange={(e) => set("event_title", e.target.value)} aria-invalid={!!errors.event_title} />
             <datalist id="events">{EVENT_TYPES.map((o) => <option key={o} value={o} />)}</datalist>
           </Cell>
-          <Cell n={8} label="Банд қилган Ф.И.Ш. (ихтиёрий)" error={errors.contact_name} className="xl:col-span-2">
+          <Cell n={8} label="Тадбир мавзуси (ихтиёрий)" error={errors.event_topic} className="xl:col-span-2">
+            <input className="field-input" maxLength={300} placeholder="Масалан: Бюджет ҳисоботини тузиш" value={v.event_topic} onChange={(e) => set("event_topic", e.target.value)} aria-invalid={!!errors.event_topic} />
+          </Cell>
+          <Cell n={9} label="Банд қилган Ф.И.Ш. (ихтиёрий)" error={errors.contact_name} className="xl:col-span-2">
             <input className="field-input" maxLength={120} autoComplete="name" placeholder="Фамилия Исм Шарифи" value={v.contact_name} onChange={(e) => set("contact_name", e.target.value)} aria-invalid={!!errors.contact_name} />
           </Cell>
 
-          <Cell n={9} label="Телефон рақами (ихтиёрий)" error={errors.contact_phone} className="xl:col-span-2">
+          <Cell n={10} label="Телефон рақами (ихтиёрий)" error={errors.contact_phone}>
             <input className="field-input" inputMode="tel" autoComplete="tel" placeholder="+998 (__) ___-__-__" value={v.contact_phone} onChange={(e) => set("contact_phone", maskPhoneInput(e.target.value))} aria-invalid={!!errors.contact_phone} />
           </Cell>
-          <Cell n={10} label="Изоҳ" error={errors.note} className="xl:col-span-4">
+          <Cell n={11} label="Изоҳ" error={errors.note} className="xl:col-span-3">
             <textarea className="field-input min-h-[42px]" rows={1} maxLength={1000} placeholder="Қўшимча маълумот (ихтиёрий)" value={v.note} onChange={(e) => set("note", e.target.value)} />
             <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-muted">
               <label className="flex items-center gap-1">
@@ -244,10 +248,10 @@ export function BookingForm({
             </div>
           </Cell>
 
-          <FileCell n={11} label="PDF ҳужжат" hint="Хат, буйруқ, шартнома · 10 MB гача" kind="pdf" accept="application/pdf,.pdf"
+          <FileCell n={12} label="PDF ҳужжат" hint="Хат, буйруқ, шартнома · 10 MB гача" kind="pdf" accept="application/pdf,.pdf"
             files={files.filter((f) => f.kind === "pdf")} existing={existing.filter((f) => f.kind === "pdf")}
             onAdd={(l) => addFiles(l, "pdf")} onRemove={(f) => setFiles((p) => p.filter((x) => x !== f))} onRemoveExisting={removeExisting} className="xl:col-span-3" />
-          <FileCell n={12} label="JPEG расм" hint="Скан, тасдиқ, афиша · автомат сиқилади" kind="jpeg" accept="image/jpeg,image/png,image/webp"
+          <FileCell n={13} label="JPEG расм" hint="Скан, тасдиқ, афиша · автомат сиқилади" kind="jpeg" accept="image/jpeg,image/png,image/webp"
             files={files.filter((f) => f.kind === "jpeg")} existing={existing.filter((f) => f.kind === "jpeg")}
             onAdd={(l) => addFiles(l, "jpeg")} onRemove={(f) => { if (f.preview) URL.revokeObjectURL(f.preview); setFiles((p) => p.filter((x) => x !== f)); }} onRemoveExisting={removeExisting} className="xl:col-span-3" />
           {fileError && <p role="alert" className="text-sm text-danger sm:col-span-2 lg:col-span-3 xl:col-span-6">{fileError}</p>}

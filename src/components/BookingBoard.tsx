@@ -55,7 +55,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
     const s = q.trim().toLowerCase();
     return bookings.filter((b) =>
       (!roomFilter || b.room_id === roomFilter) &&
-      (!s || [b.organization, b.event_title, b.contact_name, b.contact_phone, b.room_name, String(b.seq_no)].some((x) => x?.toLowerCase().includes(s))),
+      (!s || [b.organization, b.event_title, b.event_topic, b.contact_name, b.contact_phone, b.room_name, String(b.seq_no)].some((x) => x?.toLowerCase().includes(s))),
     );
   }, [bookings, q, roomFilter]);
 
@@ -179,9 +179,11 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                       <span className="min-w-0 flex-1 sm:w-[var(--room)] sm:flex-none">
                         <span className={clsx("block break-words font-medium leading-tight", fit(widths.room))} title={b.room_name}>{b.room_name}</span>
                         <span className="block truncate text-xs text-muted sm:hidden">{b.event_title}</span>
+                        {b.event_topic && <span className="block truncate text-[11px] italic text-muted sm:hidden">{b.event_topic}</span>}
                       </span>
                       <span className="hidden min-w-0 sm:block sm:w-[var(--event)] sm:flex-none">
                         <span className={clsx("block break-words font-medium leading-tight", fit(widths.event))} title={b.event_title}>{b.event_title}</span>
+                        {b.event_topic && <span className="mt-0.5 line-clamp-2 break-words text-[11px] italic leading-tight text-muted" title={b.event_topic}>{b.event_topic}</span>}
                         <span className="block truncate text-xs text-muted">{b.organization}</span>
                       </span>
                     </button>
@@ -190,7 +192,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                     ))}
                     {segs.map((s, i) => (
                       <button key={i} onClick={() => { setHover(null); setOpen(b.id); }} {...hoverOn(b)}
-                        aria-label={`${b.organization} · ${b.event_title} · ${b.room_name} · ${hours}`}
+                        aria-label={`${b.organization} · ${b.event_title}${b.event_topic ? ` (${b.event_topic})` : ""} · ${b.room_name} · ${hours}`}
                         className={clsx("z-[1] mx-0.5 my-1.5 flex items-center overflow-hidden whitespace-nowrap px-1.5 text-left text-[11px] font-semibold text-white shadow-sm transition hover:brightness-110 hover:ring-2 hover:ring-offset-1",
                           "rounded-md", i === 0 && before && "rounded-l-none", i === segs.length - 1 && after && "rounded-r-none")}
                         style={{ gridRow: 1, gridColumn: `${s.start + 1} / ${s.end + 2}`, background: color }}>

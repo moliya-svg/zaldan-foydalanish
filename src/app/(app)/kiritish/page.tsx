@@ -24,7 +24,7 @@ export default async function KiritishPage({ searchParams }: { searchParams: Pro
   const today = `${t.y}-${pad(t.m)}-${pad(t.d)}`;
   let initial: FormValues = {
     room_id: sp.room ?? "", start_date: sp.date ?? today, start_time: "09:00", end_date: sp.date ?? today, end_time: "13:00",
-    time_mode: "daily", skip_weekends: false, organization: "", event_title: "", contact_name: "", contact_phone: "",
+    time_mode: "daily", skip_weekends: false, organization: "", event_title: "", event_topic: "", contact_name: "", contact_phone: "",
     note: "", attendees: "", color: "",
   };
 
@@ -37,7 +37,7 @@ export default async function KiritishPage({ searchParams }: { searchParams: Pro
       initial = {
         room_id: b.room_id, start_date: tkDate(b.starts_at), start_time: tkTime(b.starts_at),
         end_date: tkDate(b.ends_at), end_time: tkTime(b.ends_at), time_mode: b.time_mode, skip_weekends: b.skip_weekends,
-        organization: b.organization, event_title: b.event_title, contact_name: b.contact_name ?? "",
+        organization: b.organization, event_title: b.event_title, event_topic: b.event_topic ?? "", contact_name: b.contact_name ?? "",
         contact_phone: b.contact_phone ? formatPhone(b.contact_phone) : "", note: b.note ?? "", attendees: b.attendees ? String(b.attendees) : "",
         color: b.color ?? "",
       };

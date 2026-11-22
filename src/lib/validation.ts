@@ -15,6 +15,12 @@ export const bookingSchema = z
     skip_weekends: z.boolean(),
     organization: z.string().trim().min(2, "Ташкилот номини ёзинг").max(200),
     event_title: z.string().trim().min(2, "Тадбир номини ёзинг").max(200),
+    event_topic: z
+      .string()
+      .trim()
+      .max(300, "Мавзу 300 белгидан ошмасин")
+      .optional()
+      .transform((v) => (v ? v : null)),
     contact_name: z
       .string()
       .trim()
