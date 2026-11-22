@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import clsx from "clsx";
 import { useRouter } from "next/navigation";
 import { X, Building2, CalendarClock, Landmark, User, Phone, MessageSquare, Paperclip, Pencil, Copy, Ban, Trash2, Loader2, CalendarPlus, FileText, ImageIcon, Download } from "lucide-react";
 import { bookingColor } from "@/lib/colors";
@@ -66,9 +67,9 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
 
   return (
     <div className="fixed inset-0 z-50 no-print" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-      <div className="absolute inset-0 bg-brand-950/40 backdrop-blur-[1px]" onClick={onClose} />
-      <aside className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl bg-surface shadow-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[440px] sm:rounded-none">
-        <div className="h-2 sm:h-1.5" style={{ background: color }} />
+      <div className="absolute inset-0 bg-brand-950/50 backdrop-blur-[2px]" onClick={onClose} />
+      <aside className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl bg-surface shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-h-[86vh] sm:w-[min(680px,calc(100vw-48px))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-hidden sm:overflow-y-auto sm:rounded-2xl sm:border sm:border-line">
+        <div className="h-2" style={{ background: color }} />
         <div className="flex items-start gap-3 p-5 pb-3">
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Брон №{b.seq_no}{b.status === "cancelled" && " · бекор қилинган"}</p>
@@ -77,9 +78,9 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
           <button ref={closeRef} onClick={onClose} className="rounded-lg p-2 hover:bg-canvas" aria-label="Ёпиш"><X className="size-5" /></button>
         </div>
 
-        <dl className="space-y-3 px-5 text-sm">
+        <dl className="grid gap-x-6 gap-y-3 px-5 text-sm sm:grid-cols-2 sm:gap-y-4">
           <Row icon={<Building2 />} label="Зал / хона">{b.room_name}{b.attendees ? ` · ${b.attendees} иштирокчи` : ""}</Row>
-          <Row icon={<CalendarClock />} label="Вақти">
+          <Row wide icon={<CalendarClock />} label="Вақти">
             <div className="font-semibold">{fmtDateTime(b.starts_at)} → {fmtDateTime(b.ends_at)}</div>
             <div className="text-muted">
               {b.time_mode === "daily" ? `Ҳар куни ${tkTime(b.slots[0]?.[0] ?? b.starts_at)}–${tkTime(b.slots[0]?.[1] ?? b.ends_at)}` : "Узлуксиз"}
@@ -101,10 +102,10 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
               {viewer.isAdmin ? <a className="font-medium text-brand-800 underline dark:text-brand-100" href={`tel:${b.contact_phone}`}>{formatPhone(b.contact_phone)}</a> : b.contact_phone}
             </Row>
           )}
-          {b.note && <Row icon={<MessageSquare />} label="Изоҳ"><p className="whitespace-pre-wrap">{b.note}</p></Row>}
-          {b.cancel_reason && <Row icon={<Ban />} label="Бекор қилиш сабаби">{b.cancel_reason}</Row>}
+          {b.note && <Row wide icon={<MessageSquare />} label="Изоҳ"><p className="whitespace-pre-wrap">{b.note}</p></Row>}
+          {b.cancel_reason && <Row wide icon={<Ban />} label="Бекор қилиш сабаби">{b.cancel_reason}</Row>}
           {viewer.isAdmin && (
-            <Row icon={<Paperclip />} label="Ҳужжатлар">
+            <Row wide icon={<Paperclip />} label="Ҳужжатлар">
               {files === null ? <Loader2 className="size-4 animate-spin text-muted" /> : files.length === 0 ? <span className="text-muted">Файл юкланмаган</span> : (
                 <ul className="space-y-2">
                   {files.map((f) => (
@@ -156,9 +157,9 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
   );
 }
 
-function Row({ icon, label, children }: { icon: React.ReactElement; label: string; children: React.ReactNode }) {
+function Row({ icon, label, children, wide = false }: { icon: React.ReactElement; label: string; children: React.ReactNode; wide?: boolean }) {
   return (
-    <div className="flex gap-3">
+    <div className={clsx("flex gap-3", wide && "sm:col-span-2")}>
       <span className="mt-0.5 text-brand-800 dark:text-brand-100 [&>svg]:size-4">{icon}</span>
       <div className="min-w-0 flex-1">
         <dt className="text-xs text-muted">{label}</dt>
