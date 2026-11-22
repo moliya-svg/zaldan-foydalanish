@@ -15,12 +15,12 @@ function icsFor(b: Booking): string {
   const esc = (s: string) => s.replace(/[\\,;]/g, (m) => "\\" + m).replace(/\n/g, "\\n");
   const events = b.slots.map(([a, e], i) => [
     "BEGIN:VEVENT", `UID:${b.id}-${i}@zal`, `DTSTAMP:${z(new Date().toISOString())}`, `DTSTART:${z(a)}`, `DTEND:${z(e)}`,
-    `SUMMARY:${esc(`${b.event_title} — ${b.room_name}`)}`, `DESCRIPTION:${esc(`${b.organization}\n${b.contact_name}`)}`, `LOCATION:${esc(b.room_name)}`, "END:VEVENT",
+    `SUMMARY:${esc(`${b.event_title} — ${b.room_name}`)}`, `DESCRIPTION:${esc([b.organization, b.contact_name].filter(Boolean).join("\n"))}`, `LOCATION:${esc(b.room_name)}`, "END:VEVENT",
   ].join("\r\n"));
   return ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Ukuv markazi//Bron//UZ", ...events, "END:VCALENDAR"].join("\r\n");
 }
 
-export function BookingDrawer({ booking: b, viewer, onClose }: { booking: Booking | null; viewer: Viewer; onClose: () => void }) {
+export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }: { booking: Booking | null; viewer: Viewer; onClose: () => void; startWith?: "cancel" | "delete" | null }) {
   const router = useRouter();
   const [files, setFiles] = useState<FileLink[] | null>(null);
   const [confirm, setConfirm] = useState<"cancel" | "delete" | null>(null);
@@ -30,10 +30,10 @@ export function BookingDrawer({ booking: b, viewer, onClose }: { booking: Bookin
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    setFiles(null); setConfirm(null); setReason(""); setError(null);
+    setFiles(null); setConfirm(startWith); setReason(""); setError(null);
     if (b && viewer.isAdmin) getBookingFiles(b.id).then(setFiles);
     if (b) closeRef.current?.focus();
-  }, [b, viewer.isAdmin]);
+  }, [b, viewer.isAdmin, startWith]);
 
   useEffect(() => {
     if (!b) return;
@@ -95,10 +95,12 @@ export function BookingDrawer({ booking: b, viewer, onClose }: { booking: Bookin
             )}
           </Row>
           <Row icon={<Landmark />} label="Ташкилот">{b.organization}</Row>
-          <Row icon={<User />} label="Банд қилган Ф.И.Ш.">{b.contact_name}</Row>
-          <Row icon={<Phone />} label="Телефон">
-            {viewer.isAdmin ? <a className="font-medium text-brand-800 underline dark:text-brand-100" href={`tel:${b.contact_phone}`}>{formatPhone(b.contact_phone)}</a> : b.contact_phone}
-          </Row>
+          {b.contact_name && <Row icon={<User />} label="Банд қилган Ф.И.Ш.">{b.contact_name}</Row>}
+          {b.contact_phone && (
+            <Row icon={<Phone />} label="Телефон">
+              {viewer.isAdmin ? <a className="font-medium text-brand-800 underline dark:text-brand-100" href={`tel:${b.contact_phone}`}>{formatPhone(b.contact_phone)}</a> : b.contact_phone}
+            </Row>
+          )}
           {b.note && <Row icon={<MessageSquare />} label="Изоҳ"><p className="whitespace-pre-wrap">{b.note}</p></Row>}
           {b.cancel_reason && <Row icon={<Ban />} label="Бекор қилиш сабаби">{b.cancel_reason}</Row>}
           {viewer.isAdmin && (

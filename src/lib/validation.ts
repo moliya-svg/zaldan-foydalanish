@@ -15,10 +15,18 @@ export const bookingSchema = z
     skip_weekends: z.boolean(),
     organization: z.string().trim().min(2, "Ташкилот номини ёзинг").max(200),
     event_title: z.string().trim().min(2, "Тадбир номини ёзинг").max(200),
-    contact_name: z.string().trim().min(3, "Ф.И.Ш.ни тўлиқ ёзинг").max(120),
+    contact_name: z
+      .string()
+      .trim()
+      .max(120, "Ф.И.Ш. 120 белгидан ошмасин")
+      .optional()
+      .transform((v) => (v ? v : null)),
     contact_phone: z
       .string()
+      .optional()
       .transform((v, ctx) => {
+        // Бўш ёки фақат «+998» — киритилмаган ҳисобланади
+        if (!v || v.replace(/\D/g, "").replace(/^998/, "") === "") return null;
         const p = normalizePhone(v);
         if (!p) {
           ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Телефон рақам нотўғри: +998 (XX) XXX-XX-XX" });
