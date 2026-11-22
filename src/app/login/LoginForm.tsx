@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, KeyRound, Loader2, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -11,10 +11,34 @@ export function LoginForm({ next }: { next?: string }) {
   const [step, setStep] = useState<"email" | "code">("email");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const left = Math.max(0, Math.ceil((cooldownUntil - now) / 1000));
+
+  // Хат юборилгандан кейин 60 сония кутиш (саҳифа янгиланса ҳам сақланади)
+  useEffect(() => {
+    try { setCooldownUntil(Number(localStorage.getItem("otp-cooldown") || 0)); } catch { /* шахсий режим */ }
+  }, []);
+  useEffect(() => {
+    if (cooldownUntil <= Date.now()) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [cooldownUntil]);
+  function startCooldown(sec: number) {
+    const until = Date.now() + sec * 1000;
+    setCooldownUntil(until);
+    setNow(Date.now());
+    try { localStorage.setItem("otp-cooldown", String(until)); } catch { /* шахсий режим */ }
+  }
+
   const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
-  async function sendCode(e: React.FormEvent) {
-    e.preventDefault();
+  async function sendCode(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (busy || left > 0) {
+      if (left > 0) setStep("code");
+      return;
+    }
     setBusy(true);
     setError(null);
     const supabase = createClient();
@@ -23,8 +47,17 @@ export function LoginForm({ next }: { next?: string }) {
       options: { shouldCreateUser: true, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(target)}` },
     });
     setBusy(false);
-    if (error) setError(error.status === 429 ? "Жуда кўп уриниш. Бир дақиқадан кейин қайта уриниб кўринг." : "Код юборилмади: " + error.message);
-    else setStep("code");
+    if (!error) {
+      startCooldown(60);
+      setStep("code");
+    } else if (error.status === 429) {
+      // Хат яқинда юборилган: янгисини сўрамасдан, борини ишлатишни таклиф қиламиз
+      startCooldown(60);
+      setStep("code");
+      setError("Хат яқинда юборилган. Почтангиздаги энг охирги хатни очинг.");
+    } else {
+      setError("Хат юборилмади: " + error.message);
+    }
   }
 
   async function verify(e: React.FormEvent) {
@@ -46,7 +79,7 @@ export function LoginForm({ next }: { next?: string }) {
     return (
       <form onSubmit={verify} className="mt-6 space-y-4">
         <p className="text-sm">
-          <b>{email}</b> манзилига код юборилди. Хатдаги кодни киритинг ёки хатдаги ҳаволани босинг.
+          <b>{email || "E-mail"}</b> манзилига хат юборилди. Хатдаги ҳаволани <b>шу браузерда</b> босинг ёки хатда код бўлса, уни шу ерга киритинг.
         </p>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">Код</span>
@@ -59,7 +92,10 @@ export function LoginForm({ next }: { next?: string }) {
         <button className="btn btn-primary w-full" disabled={busy || code.length < 6}>
           {busy && <Loader2 className="size-4 animate-spin" />} Кириш
         </button>
-        <button type="button" className="flex items-center gap-1 text-sm text-muted hover:underline" onClick={() => { setStep("email"); setCode(""); }}>
+        <button type="button" className="w-full text-sm font-medium text-brand-800 hover:underline disabled:text-muted disabled:no-underline dark:text-brand-100" disabled={busy || left > 0} onClick={() => { setError(null); sendCode(); }}>
+          {left > 0 ? `Хатни қайта юбориш: ${left} сониядан кейин` : "Хатни қайта юбориш"}
+        </button>
+        <button type="button" className="flex items-center gap-1 text-sm text-muted hover:underline" onClick={() => { setStep("email"); setCode(""); setError(null); }}>
           <ArrowLeft className="size-4" /> Бошқа e-mail
         </button>
       </form>
@@ -77,8 +113,9 @@ export function LoginForm({ next }: { next?: string }) {
       </label>
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button className="btn btn-primary w-full" disabled={busy}>
-        {busy && <Loader2 className="size-4 animate-spin" />} Код олиш
+        {busy && <Loader2 className="size-4 animate-spin" />} {left > 0 ? "Кодни киритиш" : "Код олиш"}
       </button>
+      {left > 0 && <p className="text-xs text-muted">Хат юборилган. Янгисини {left} сониядан кейин сўраш мумкин.</p>}
       <p className="text-xs text-muted">Биринчи марта кирганлар фойдаланувчи (кўриш) ҳуқуқини олади. Брон киритиш ҳуқуқини бош админ беради.</p>
     </form>
   );

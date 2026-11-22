@@ -546,6 +546,15 @@ revoke insert, update, delete on public.bookings, public.booking_slots, public.p
 revoke all on public.bookings, public.booking_slots, public.booking_files, public.profiles,
   public.role_grants, public.audit_log, public.app_settings, public.rooms from anon;
 
+-- Supabase'нинг янги лойиҳаларида жадвалларга рухсат ўзи берилмайди: аниқ берамиз.
+-- Ким нимани кўриши юқоридаги RLS қоидалари билан чекланади.
+grant usage on schema public to anon, authenticated;
+grant select on public.profiles, public.rooms, public.bookings, public.booking_slots,
+  public.booking_files, public.role_grants, public.audit_log to authenticated;
+grant insert, delete on public.booking_files to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+grant execute on all functions in schema public to authenticated;
+
 grant execute on function public.get_bookings(timestamptz, timestamptz, boolean) to authenticated;
 grant execute on function public.check_availability(uuid, timestamptz, timestamptz, public.time_mode, boolean, uuid) to authenticated;
 grant execute on function public.free_rooms(timestamptz, timestamptz, public.time_mode, boolean, uuid) to authenticated;
