@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden"><Brand size={48} /></div>
           <h2 className="text-2xl font-bold">Тизимга кириш</h2>
-          <p className="mt-1 text-sm text-muted">E-mail манзилингизга бир марталик код юборамиз. Парол керак эмас.</p>
+          <p className="mt-1 text-sm text-muted">E-mail ва пароль билан киринг. Пароль бўлмаса, почтага бир марталик код юборамиз.</p>
           {notice && <p role="alert" className="mt-4 rounded-lg bg-gold-100 px-3 py-2 text-sm text-ink">{notice}</p>}
           <LoginForm next={sp.next} />
         </div>

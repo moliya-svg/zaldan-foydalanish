@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarPlus, CalendarRange, Home, Building2, ShieldCheck, LogOut } from "lucide-react";
+import { CalendarPlus, CalendarRange, Home, Building2, ShieldCheck, LogOut, KeyRound } from "lucide-react";
 import { A11yBar } from "./A11yBar";
 import { Brand } from "./Brand";
 import { NavLink } from "./NavLink";
@@ -39,6 +39,7 @@ export function AppShell({ viewer, children }: { viewer: Viewer; children: React
               <div className="font-semibold">{viewer.email}</div>
               <div className="text-gold-400">{ROLE_LABEL[viewer.role]}</div>
             </div>
+            <Link href="/parol" className="rounded-lg p-2 hover:bg-white/10" aria-label="Паролни ўзгартириш" title="Паролни ўзгартириш"><KeyRound className="size-5" /></Link>
             <form action="/auth/signout" method="post">
               <button className="rounded-lg p-2 hover:bg-white/10" aria-label="Чиқиш" title="Чиқиш"><LogOut className="size-5" /></button>
             </form>

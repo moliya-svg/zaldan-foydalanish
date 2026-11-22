@@ -1,6 +1,8 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "./supabase/server";
+import { createAdminClient } from "./supabase/admin";
+import { getViewer } from "./auth";
 import { bookingSchema, type BookingInput } from "./validation";
 import { toIso, fmtDateTime } from "./dates";
 import type { Room, Role, TimeMode } from "./types";
@@ -145,6 +147,45 @@ export async function setUserBlocked(userId: string, blocked: boolean): Promise<
   const supabase = await createClient();
   const { error } = await supabase.rpc("set_user_blocked", { p_user: userId, p_blocked: blocked });
   if (error) return { ok: false, message: error.message };
+  revalidatePath("/boshqaruv");
+  return { ok: true };
+}
+
+const MIN_PASSWORD = 8;
+
+/**
+ * Бош админ фойдаланувчига пароль беради: бор бўлса паролини янгилайди,
+ * йўқ бўлса шу пароль билан ҳисоб очади (почтани тасдиқлаш шарт эмас).
+ */
+export async function setUserPassword(
+  email: string,
+  password: string,
+  role?: Exclude<Role, "super_admin">,
+): Promise<{ ok: boolean; message?: string }> {
+  const viewer = await getViewer();
+  if (!viewer?.isSuperAdmin) return { ok: false, message: "Фақат бош админ пароль бера олади." };
+  const e = email.trim().toLowerCase();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return { ok: false, message: "E-mail нотўғри." };
+  if (password.length < MIN_PASSWORD) return { ok: false, message: `Пароль камида ${MIN_PASSWORD} белгидан иборат бўлсин.` };
+
+  const admin = createAdminClient();
+  if (!admin) return { ok: false, message: "Серверда SUPABASE_SERVICE_ROLE_KEY созланмаган. Vercel → Settings → Environment Variables." };
+
+  const supabase = await createClient();
+  // Рол аввал ёзилади: янги ҳисоб очилганда триггер шу ролни олади
+  if (role && e !== viewer.email.toLowerCase()) {
+    const { error } = await supabase.rpc("set_user_role", { p_email: e, p_role: role });
+    if (error) return { ok: false, message: error.message };
+  }
+
+  const { data: existing } = await supabase.from("profiles").select("id").eq("email", e).maybeSingle();
+  if (existing?.id) {
+    const { error } = await admin.auth.admin.updateUserById(existing.id, { password, email_confirm: true });
+    if (error) return { ok: false, message: "Пароль сақланмади: " + error.message };
+  } else {
+    const { error } = await admin.auth.admin.createUser({ email: e, password, email_confirm: true });
+    if (error) return { ok: false, message: "Ҳисоб очилмади: " + error.message };
+  }
   revalidatePath("/boshqaruv");
   return { ok: true };
 }
