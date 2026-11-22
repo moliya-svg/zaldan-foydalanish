@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarPlus, CalendarRange, Building2, ShieldCheck, LogOut, KeyRound } from "lucide-react";
+import { CalendarPlus, CalendarRange, Building2, ShieldCheck, LogOut, KeyRound, History } from "lucide-react";
 import { A11yBar } from "./A11yBar";
 import { Brand } from "./Brand";
 import { NavLink } from "./NavLink";
@@ -11,6 +11,7 @@ export function AppShell({ viewer, children }: { viewer: Viewer; children: React
   const items = [
     { href: "/korish", label: "KO'RISH BRON", short: "Кўриш", icon: <CalendarRange className="size-5" />, show: true },
     { href: "/kiritish", label: "KIRITISH BRON", short: "Киритиш", icon: <CalendarPlus className="size-5" />, show: viewer.isAdmin },
+    { href: "/utgan", label: "Ўтган тадбирлар", short: "Ўтган", icon: <History className="size-5" />, show: true },
     { href: "/xonalar", label: "Зал ва хоналар", short: "Хоналар", icon: <Building2 className="size-5" />, show: true },
     { href: "/boshqaruv", label: "Бошқарув", short: "Бошқарув", icon: <ShieldCheck className="size-5" />, show: viewer.isSuperAdmin },
   ].filter((i) => i.show);
