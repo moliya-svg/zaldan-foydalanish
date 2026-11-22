@@ -68,7 +68,7 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
   return (
     <div className="fixed inset-0 z-50 no-print" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
       <div className="absolute inset-0 bg-brand-950/50 backdrop-blur-[2px]" onClick={onClose} />
-      <aside className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl bg-surface shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-h-[86vh] sm:w-[min(680px,calc(100vw-48px))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-hidden sm:overflow-y-auto sm:rounded-2xl sm:border sm:border-line">
+      <aside className="absolute inset-x-0 bottom-0 max-h-[88vh] overflow-y-auto rounded-t-2xl bg-surface shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:max-h-[86vh] sm:w-[min(620px,calc(100vw-48px))] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:overflow-hidden sm:overflow-y-auto sm:rounded-2xl sm:border sm:border-line">
         <div className="h-2" style={{ background: color }} />
         <div className="flex items-start gap-3 p-5 pb-3">
           <div className="min-w-0 flex-1">
@@ -78,11 +78,16 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
           <button ref={closeRef} onClick={onClose} className="rounded-lg p-2 hover:bg-canvas" aria-label="Ёпиш"><X className="size-5" /></button>
         </div>
 
-        <dl className="grid gap-x-6 gap-y-3 px-5 text-sm sm:grid-cols-2 sm:gap-y-4">
+        <dl className="space-y-4 px-5 text-sm sm:px-6">
           <Row icon={<Building2 />} label="Зал / хона">{b.room_name}{b.attendees ? ` · ${b.attendees} иштирокчи` : ""}</Row>
           <Row wide icon={<CalendarClock />} label="Вақти">
-            <div className="font-semibold">{fmtDateTime(b.starts_at)} → {fmtDateTime(b.ends_at)}</div>
-            <div className="text-muted">
+            <div className="grid grid-cols-[auto_1fr] items-baseline gap-x-3 gap-y-2">
+              <span className="text-muted">Бошланиши:</span>
+              <span className="font-semibold tabular-nums">{fmtDate(b.starts_at)} <span className="ml-2 text-muted">соат</span> {tkTime(b.starts_at)}</span>
+              <span className="text-muted">Тугаши:</span>
+              <span className="font-semibold tabular-nums">{fmtDate(b.ends_at)} <span className="ml-2 text-muted">соат</span> {tkTime(b.ends_at)}</span>
+            </div>
+            <div className="mt-2 text-muted">
               {b.time_mode === "daily" ? `Ҳар куни ${tkTime(b.slots[0]?.[0] ?? b.starts_at)}–${tkTime(b.slots[0]?.[1] ?? b.ends_at)}` : "Узлуксиз"}
               {b.skip_weekends && ", дам олиш кунларисиз"} · {days} кун · жами {totalHours(b.slots)} соат
             </div>
