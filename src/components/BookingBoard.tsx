@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
@@ -20,6 +20,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
   const [roomFilter, setRoomFilter] = useState(sp.get("room") ?? "");
   const [openId, setOpenId] = useState<string | null>(sp.get("open"));
   const [startWith, setStartWith] = useState<"cancel" | "delete" | null>(null);
+  const [widths, setWidths] = useColumnWidths();
   const n = daysInMonth(year, month);
   const today = todayTk();
   const todayCol = today.y === year && today.m === month ? today.d : null;
@@ -123,7 +124,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
       </div>
 
       {/* Жадвал */}
-      <div className="card overflow-x-auto [--act:64px] sm:[--act:76px] [--day:24px] [--left:190px] sm:[--left:300px] lg:[--left:460px] xl:[--day:26px]" style={{ WebkitOverflowScrolling: "touch" }}>
+      <div className="card overflow-x-auto [--act:64px] sm:[--act:76px] [--day:24px] [--left:190px] sm:[--left:calc(var(--room)+var(--event)+60px)] xl:[--day:26px]" style={{ WebkitOverflowScrolling: "touch", ["--room" as string]: `${widths.room}px`, ["--event" as string]: `${widths.event}px` }}>
         <div className="min-w-fit">
           {/* Сарлавҳа */}
           <div className="sticky top-0 z-20 grid border-b border-line bg-surface text-xs" style={{ gridTemplateColumns: cols }}>
@@ -131,8 +132,14 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
               {view === "bookings" ? (
                 <div className="flex w-full gap-2">
                   <span className="w-7 shrink-0">№</span>
-                  <span className="flex-1 sm:w-28 sm:flex-none lg:w-44">Зал / хона<span className="sm:hidden"> · Тадбир</span></span>
-                  <span className="hidden flex-1 sm:block">Тадбир</span>
+                  <span className="relative flex-1 sm:w-[var(--room)] sm:flex-none">
+                    Зал / хона<span className="sm:hidden"> · Тадбир</span>
+                    <Resizer label="Зал / хона" value={widths.room} onChange={(room) => setWidths({ ...widths, room })} />
+                  </span>
+                  <span className="relative hidden sm:block sm:w-[var(--event)] sm:flex-none">
+                    Тадбир
+                    <Resizer label="Тадбир" value={widths.event} onChange={(event) => setWidths({ ...widths, event })} />
+                  </span>
                 </div>
               ) : <span>Зал / хона</span>}
             </div>
@@ -159,11 +166,11 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                   <div key={b.id} className="group grid border-b border-line text-sm last:border-b-0 hover:bg-canvas/60" style={{ gridTemplateColumns: cols }}>
                     <button onClick={() => setOpen(b.id)} className="sticky left-0 z-10 flex items-center gap-2 bg-surface px-2 py-1.5 text-left shadow-[1px_0_0_var(--line)] group-hover:bg-canvas" style={{ gridRow: 1, gridColumn: 1 }}>
                       <span className="w-7 shrink-0 font-semibold tabular-nums text-muted">{idx + 1}</span>
-                      <span className="min-w-0 flex-1 sm:w-28 sm:flex-none lg:w-44">
+                      <span className="min-w-0 flex-1 sm:w-[var(--room)] sm:flex-none">
                         <span className="block truncate font-medium">{b.room_name}</span>
                         <span className="block truncate text-xs text-muted sm:hidden">{b.event_title}</span>
                       </span>
-                      <span className="hidden min-w-0 flex-1 sm:block">
+                      <span className="hidden min-w-0 sm:block sm:w-[var(--event)] sm:flex-none">
                         <span className="block truncate font-medium">{b.event_title}</span>
                         <span className="block truncate text-xs text-muted">{b.organization}</span>
                       </span>
@@ -261,3 +268,44 @@ function Empty({ canAdd }: { canAdd: boolean }) {
   );
 }
 
+
+// ── Устун кенглиги: сичқонча/бармоқ билан суриш, браузерда эслаб қолинади ──
+type Widths = { room: number; event: number };
+const DEFAULT_WIDTHS: Widths = { room: 176, event: 260 };
+const WIDTHS_KEY = "korish-col-widths";
+const clampW = (n: number) => Math.min(600, Math.max(90, Math.round(n)));
+
+function useColumnWidths(): [Widths, (w: Widths) => void] {
+  const [w, setW] = useState<Widths>(DEFAULT_WIDTHS);
+  useEffect(() => {
+    try {
+      const v = JSON.parse(localStorage.getItem(WIDTHS_KEY) ?? "null");
+      if (v && typeof v.room === "number" && typeof v.event === "number") setW({ room: clampW(v.room), event: clampW(v.event) });
+    } catch { /* сақланмаган */ }
+  }, []);
+  const set = (next: Widths) => {
+    setW(next);
+    try { localStorage.setItem(WIDTHS_KEY, JSON.stringify(next)); } catch { /* жим */ }
+  };
+  return [w, set];
+}
+
+function Resizer({ label, value, onChange }: { label: string; value: number; onChange: (n: number) => void }) {
+  const start = useRef<{ x: number; w: number } | null>(null);
+  return (
+    <span
+      role="separator" aria-orientation="vertical" aria-label={`${label} устуни кенглиги`} aria-valuenow={value} aria-valuemin={90} aria-valuemax={600}
+      tabIndex={0} title="Суриб кенглигини ўзгартиринг (икки марта босиш — асл ҳолат)"
+      className="no-print absolute -right-2 top-[-8px] bottom-[-8px] hidden w-3 cursor-col-resize touch-none select-none sm:block after:absolute after:inset-y-1 after:left-1/2 after:w-0.5 after:-translate-x-1/2 after:rounded after:bg-line hover:after:bg-brand-700 focus-visible:after:bg-brand-700"
+      onPointerDown={(e) => { e.preventDefault(); e.currentTarget.setPointerCapture(e.pointerId); start.current = { x: e.clientX, w: value }; }}
+      onPointerMove={(e) => { if (start.current) onChange(clampW(start.current.w + e.clientX - start.current.x)); }}
+      onPointerUp={() => { start.current = null; }}
+      onPointerCancel={() => { start.current = null; }}
+      onDoubleClick={() => onChange(label === "Тадбир" ? DEFAULT_WIDTHS.event : DEFAULT_WIDTHS.room)}
+      onKeyDown={(e) => {
+        if (e.key === "ArrowLeft") { e.preventDefault(); onChange(clampW(value - 16)); }
+        if (e.key === "ArrowRight") { e.preventDefault(); onChange(clampW(value + 16)); }
+      }}
+    />
+  );
+}
