@@ -34,7 +34,7 @@ export function LoginForm({ next }: { next?: string }) {
     try { localStorage.setItem("otp-cooldown", String(until)); } catch { /* шахсий режим */ }
   }
 
-  const target = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const target = next && next.startsWith("/") && !next.startsWith("//") && next !== "/" ? next : "/korish";
 
   async function sendCode(e?: React.FormEvent) {
     e?.preventDefault();

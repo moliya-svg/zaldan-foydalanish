@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 function safeNext(n: string | null) {
-  return n && n.startsWith("/") && !n.startsWith("//") ? n : "/";
+  return n && n.startsWith("/") && !n.startsWith("//") ? n : "/korish";
 }
 
 // Magic link (PKCE): ?code=...

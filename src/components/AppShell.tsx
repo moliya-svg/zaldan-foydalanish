@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarPlus, CalendarRange, Home, Building2, ShieldCheck, LogOut, KeyRound } from "lucide-react";
+import { CalendarPlus, CalendarRange, Building2, ShieldCheck, LogOut, KeyRound } from "lucide-react";
 import { A11yBar } from "./A11yBar";
 import { Brand } from "./Brand";
 import { NavLink } from "./NavLink";
@@ -9,9 +9,8 @@ const ROLE_LABEL = { super_admin: "Бош админ", admin: "Админ", view
 
 export function AppShell({ viewer, children }: { viewer: Viewer; children: React.ReactNode }) {
   const items = [
-    { href: "/", label: "Бош саҳифа", short: "Бош", icon: <Home className="size-5" />, show: true },
-    { href: "/kiritish", label: "KIRITISH BRON", short: "Киритиш", icon: <CalendarPlus className="size-5" />, show: viewer.isAdmin },
     { href: "/korish", label: "KO'RISH BRON", short: "Кўриш", icon: <CalendarRange className="size-5" />, show: true },
+    { href: "/kiritish", label: "KIRITISH BRON", short: "Киритиш", icon: <CalendarPlus className="size-5" />, show: viewer.isAdmin },
     { href: "/xonalar", label: "Зал ва хоналар", short: "Хоналар", icon: <Building2 className="size-5" />, show: true },
     { href: "/boshqaruv", label: "Бошқарув", short: "Бошқарув", icon: <ShieldCheck className="size-5" />, show: viewer.isSuperAdmin },
   ].filter((i) => i.show);
@@ -26,7 +25,7 @@ export function AppShell({ viewer, children }: { viewer: Viewer; children: React
           </div>
         </div>
         <div className="mx-auto flex max-w-[1800px] items-center gap-6 px-4 py-3">
-          <Link href="/" aria-label="Бош саҳифа"><Brand light /></Link>
+          <Link href="/korish" aria-label="KO'RISH BRON"><Brand light /></Link>
           <nav className="ml-2 hidden flex-1 items-center gap-1 lg:flex" aria-label="Асосий меню">
             {items.map((i) => (
               <NavLink key={i.href} href={i.href} className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white" activeClassName="bg-white/15 text-white shadow-[inset_0_-3px_0_var(--color-gold-500)]">
