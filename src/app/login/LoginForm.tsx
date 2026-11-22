@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, KeyRound, Loader2, ArrowLeft } from "lucide-react";
+import { Mail, KeyRound, Loader2, ArrowLeft, Lock, Eye, EyeOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm({ next }: { next?: string }) {
@@ -9,6 +9,9 @@ export function LoginForm({ next }: { next?: string }) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"email" | "code">("email");
+  const [mode, setMode] = useState<"password" | "otp">("password");
+  const [password, setPassword] = useState("");
+  const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -75,6 +78,69 @@ export function LoginForm({ next }: { next?: string }) {
     router.refresh();
   }
 
+  async function signInWithPassword(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+    if (error) {
+      setBusy(false);
+      setError(error.status === 429 ? "Жуда кўп уриниш. Бир дақиқадан кейин қайта уриниб кўринг." : "E-mail ёки пароль нотўғри.");
+      return;
+    }
+    router.replace(target);
+    router.refresh();
+  }
+
+  const tabs = (
+    <div className="mt-6 grid grid-cols-2 rounded-lg border border-line p-0.5 text-sm" role="tablist">
+      {([["password", "Пароль билан"], ["otp", "Почтага код"]] as const).map(([m, label]) => (
+        <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setError(null); setStep("email"); }}
+          className={mode === m ? "rounded-md bg-brand-900 px-3 py-1.5 font-semibold text-white" : "rounded-md px-3 py-1.5 text-muted hover:text-ink"}>
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+
+  const emailField = (
+    <label className="block">
+      <span className="mb-1 block text-sm font-medium">E-mail</span>
+      <div className="relative">
+        <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+        <input className="field-input pl-9" type="email" autoComplete="email" required autoFocus placeholder="ism@example.uz" value={email} onChange={(e) => setEmail(e.target.value)} />
+      </div>
+    </label>
+  );
+
+  if (mode === "password") {
+    return (
+      <>
+        {tabs}
+        <form onSubmit={signInWithPassword} className="mt-4 space-y-4">
+          {emailField}
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Пароль</span>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+              <input className="field-input px-9" type={show ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+              <button type="button" onClick={() => setShow(!show)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:text-ink" aria-label={show ? "Паролни яшириш" : "Паролни кўрсатиш"}>
+                {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              </button>
+            </div>
+          </label>
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+          <button className="btn btn-primary w-full" disabled={busy || !password}>
+            {busy && <Loader2 className="size-4 animate-spin" />} Кириш
+          </button>
+          <p className="text-xs text-muted">Паролни бош админ беради. Пароль бўлмаса ёки эсдан чиқса, «Почтага код» орқали киринг.</p>
+        </form>
+      </>
+    );
+  }
+
   if (step === "code") {
     return (
       <form onSubmit={verify} className="mt-6 space-y-4">
@@ -103,14 +169,10 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <form onSubmit={sendCode} className="mt-6 space-y-4">
-      <label className="block">
-        <span className="mb-1 block text-sm font-medium">E-mail</span>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
-          <input className="field-input pl-9" type="email" autoComplete="email" required autoFocus placeholder="ism@example.uz" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-      </label>
+    <>
+    {tabs}
+    <form onSubmit={sendCode} className="mt-4 space-y-4">
+      {emailField}
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button className="btn btn-primary w-full" disabled={busy}>
         {busy && <Loader2 className="size-4 animate-spin" />} {left > 0 ? "Кодни киритиш" : "Код олиш"}
@@ -118,5 +180,6 @@ export function LoginForm({ next }: { next?: string }) {
       {left > 0 && <p className="text-xs text-muted">Хат юборилган. Янгисини {left} сониядан кейин сўраш мумкин.</p>}
       <p className="text-xs text-muted">Биринчи марта кирганлар фойдаланувчи (кўриш) ҳуқуқини олади. Брон киритиш ҳуқуқини бош админ беради.</p>
     </form>
+    </>
   );
 }

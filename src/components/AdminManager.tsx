@@ -1,9 +1,9 @@
 "use client";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, ShieldPlus, Lock, Unlock } from "lucide-react";
+import { Loader2, ShieldPlus, Lock, Unlock, KeyRound, Wand2, Eye, EyeOff } from "lucide-react";
 import clsx from "clsx";
-import { setUserRole, setUserBlocked } from "@/lib/actions";
+import { setUserRole, setUserBlocked, setUserPassword } from "@/lib/actions";
 import type { Role } from "@/lib/types";
 
 export interface UserRow { id: string | null; email: string; role: Role; is_blocked: boolean; created_at: string | null; pending: boolean }
@@ -15,6 +15,18 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
+  const [pEmail, setPEmail] = useState("");
+  const [pPass, setPPass] = useState("");
+  const [pRole, setPRole] = useState<"admin" | "viewer">("admin");
+  const [showPass, setShowPass] = useState(true);
+
+  function genPassword() {
+    const abc = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    const arr = new Uint32Array(10);
+    crypto.getRandomValues(arr);
+    setPPass(Array.from(arr, (n) => abc[n % abc.length]).join(""));
+    setShowPass(true);
+  }
 
   const act = (fn: () => Promise<{ ok: boolean; message?: string }>, okText: string) =>
     start(async () => {
@@ -34,6 +46,27 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
           <button className="btn btn-primary" disabled={pending}>{pending ? <Loader2 className="size-4 animate-spin" /> : <ShieldPlus className="size-4" />}Админ қилиш</button>
         </form>
         <p className="mt-2 text-xs text-muted">Ҳали тизимга кирмаган e-mail ҳам қўшиш мумкин. У биринчи кирганда дарҳол админ бўлади.</p>
+      </div>
+      <div id="parol-berish" className="border-b border-line p-4">
+        <h2 className="mb-1 font-semibold">Пароль бериш</h2>
+        <p className="mb-2 text-xs text-muted">Фойдаланувчи почтага хат кутмасдан шу e-mail ва пароль билан киради. Ҳисоб йўқ бўлса, очилади. Бор бўлса, пароли янгиланади.</p>
+        <form className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]" onSubmit={(e) => {
+          e.preventDefault();
+          const em = pEmail, pw = pPass;
+          act(() => setUserPassword(em, pw, pRole), `${em} учун пароль сақланди. Паролни унга айтинг: ${pw}`);
+        }}>
+          <input type="email" required className="field-input" placeholder="e-mail манзил" value={pEmail} onChange={(e) => setPEmail(e.target.value)} />
+          <div className="relative">
+            <input type={showPass ? "text" : "password"} required minLength={8} className="field-input pr-16" placeholder="пароль (камида 8 белги)" autoComplete="new-password" value={pPass} onChange={(e) => setPPass(e.target.value)} />
+            <button type="button" onClick={() => setShowPass(!showPass)} className="absolute right-8 top-1/2 -translate-y-1/2 rounded p-1 text-muted hover:text-ink" aria-label={showPass ? "Яшириш" : "Кўрсатиш"}>{showPass ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button>
+            <button type="button" onClick={genPassword} className="absolute right-1 top-1/2 -translate-y-1/2 rounded p-1 text-brand-800 hover:bg-brand-50 dark:text-brand-100" title="Тасодифий пароль яратиш" aria-label="Тасодифий пароль яратиш"><Wand2 className="size-4" /></button>
+          </div>
+          <select className="field-input !w-auto" value={pRole} onChange={(e) => setPRole(e.target.value as "admin" | "viewer")} aria-label="Рол">
+            <option value="admin">Админ</option>
+            <option value="viewer">Фойдаланувчи</option>
+          </select>
+          <button className="btn btn-primary" disabled={pending}>{pending ? <Loader2 className="size-4 animate-spin" /> : <KeyRound className="size-4" />}Сақлаш</button>
+        </form>
         {msg && <p role="status" className={clsx("mt-2 text-sm", msg.ok ? "text-ok" : "text-danger")}>{msg.text}</p>}
       </div>
       <div className="overflow-x-auto">
@@ -50,6 +83,11 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
                 </td>
                 <td className="px-4 py-2 text-xs text-muted">{r.pending ? "Ҳали кирмаган" : r.is_blocked ? "Блокланган" : "Фаол"}</td>
                 <td className="px-4 py-2 text-right">
+                  <div className="inline-flex gap-2">
+                    <button className="btn btn-ghost !min-h-8 !px-2 !py-1" disabled={pending} title="Пароль бериш" aria-label={`${r.email}: пароль бериш`}
+                      onClick={() => { setPEmail(r.email); setPRole(r.role === "viewer" ? "viewer" : "admin"); setPPass(""); document.getElementById("parol-berish")?.scrollIntoView({ behavior: "smooth" }); }}>
+                      <KeyRound className="size-4" />
+                    </button>
                   {r.role !== "super_admin" && (
                     <div className="inline-flex gap-2">
                       {r.role === "admin"
@@ -63,6 +101,7 @@ export function AdminManager({ rows, selfId }: { rows: UserRow[]; selfId: string
                       )}
                     </div>
                   )}
+                  </div>
                 </td>
               </tr>
             ))}
