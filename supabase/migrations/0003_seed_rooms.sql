@@ -1,0 +1,25 @@
+-- «Хоналар 19.11.2026.xlsx» асосида 22 та зал ва хона
+insert into public.rooms (name, kind, floor, capacity, capacity_alt, sort_order) values
+  ('Катта мажлислар зали','hall',null,154,'Ўзгарган ҳолда: 80–90',1),
+  ('Кичик мажлислар зали','hall',null,28,'Ўзгарган ҳолда: 40',2),
+  ('105-хона','classroom',1,24,null,10),
+  ('107-хона','classroom',1,20,null,11),
+  ('108-хона','computer',1,16,null,12),
+  ('109-хона','classroom',1,20,null,13),
+  ('110-хона','classroom',1,24,null,14),
+  ('111-хона','computer',1,16,null,15),
+  ('113-хона','classroom',1,16,null,16),
+  ('204-хона','classroom',2,20,null,17),
+  ('205-хона','computer',2,16,null,18),
+  ('206-хона','classroom',2,20,null,19),
+  ('207-хона','classroom',2,30,null,20),
+  ('208-хона','computer',2,16,null,21),
+  ('210-хона','classroom',2,24,null,22),
+  ('305-хона','classroom',3,24,null,23),
+  ('307-хона','classroom',3,20,null,24),
+  ('308-хона','computer',3,20,null,25),
+  ('309-хона','classroom',3,20,null,26),
+  ('310-хона','classroom',3,30,null,27),
+  ('311-хона','computer',3,20,null,28),
+  ('313-хона','classroom',3,24,null,29)
+on conflict (name) do nothing;
