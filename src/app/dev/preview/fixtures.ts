@@ -1,6 +1,6 @@
 import type { Booking, Room, Viewer } from "@/lib/types";
 
-export const fixtureViewer: Viewer = { id: "u1", email: "ilxomovb2023@gmail.com", role: "super_admin", isAdmin: true, isSuperAdmin: true };
+export const fixtureViewer: Viewer = { id: "u1", email: "ilxomovb2023@gmail.com", role: "super_admin", isAdmin: true, isSuperAdmin: true, canManageAll: true };
 
 const names: [string, Room["kind"], number, string | null][] = [
   ["Катта мажлислар зали", "hall", 154, "Ўзгарган ҳолда: 80–90"], ["Кичик мажлислар зали", "hall", 28, "Ўзгарган ҳолда: 40"],

@@ -5,7 +5,7 @@ import { createAdminClient } from "./supabase/admin";
 import { getViewer } from "./auth";
 import { bookingSchema, type BookingInput } from "./validation";
 import { toIso, fmtDateTime } from "./dates";
-import type { Room, Role, TimeMode } from "./types";
+import type { Room, AssignableRole, TimeMode } from "./types";
 
 export interface Conflict {
   booking_id: string;
@@ -138,7 +138,7 @@ export async function deleteBookingFile(fileId: string): Promise<{ ok: boolean; 
 
 export async function setUserRole(
   email: string,
-  role: Exclude<Role, "super_admin">,
+  role: AssignableRole,
   fullName?: string,
 ): Promise<{ ok: boolean; message?: string }> {
   const supabase = await createClient();
@@ -170,7 +170,7 @@ const MIN_PASSWORD = 8;
 export async function setUserPassword(
   email: string,
   password: string,
-  role?: Exclude<Role, "super_admin">,
+  role?: AssignableRole,
   fullName?: string,
 ): Promise<{ ok: boolean; message?: string }> {
   const viewer = await getViewer();
