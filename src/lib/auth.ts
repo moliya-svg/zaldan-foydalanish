@@ -18,8 +18,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     id: profile.id,
     email: profile.email,
     role: profile.role,
-    isAdmin: profile.role === "admin" || profile.role === "super_admin",
+    isAdmin: profile.role === "admin" || profile.role === "admin1" || profile.role === "super_admin",
     isSuperAdmin: profile.role === "super_admin",
+    canManageAll: profile.role === "admin1" || profile.role === "super_admin",
   };
 });
 

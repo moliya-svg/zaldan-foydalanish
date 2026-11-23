@@ -1,4 +1,16 @@
-export type Role = "super_admin" | "admin" | "viewer";
+export type Role = "super_admin" | "admin1" | "admin" | "viewer";
+
+/** Бош админ берадиган роллар (super_admin битта ва ўзгармайди). */
+export type AssignableRole = Exclude<Role, "super_admin">;
+
+export const ROLE_LABEL: Record<Role, string> = {
+  super_admin: "Бош админ",
+  admin1: "Админ-1",
+  admin: "Админ",
+  viewer: "Фойдаланувчи",
+};
+
+export const ROLE_ORDER: Role[] = ["super_admin", "admin1", "admin", "viewer"];
 export type TimeMode = "continuous" | "daily";
 
 export interface Room {
@@ -49,6 +61,8 @@ export interface Viewer {
   role: Role;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  /** Барча бронларни таҳрирлаш ва ўчириш (Бош админ ва Админ-1) */
+  canManageAll: boolean;
 }
 
 export const ROOM_KIND_LABEL: Record<Room["kind"], string> = {

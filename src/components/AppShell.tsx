@@ -3,9 +3,8 @@ import { CalendarPlus, CalendarRange, Building2, ShieldCheck, LogOut, KeyRound, 
 import { A11yBar } from "./A11yBar";
 import { Brand } from "./Brand";
 import { NavLink } from "./NavLink";
-import type { Viewer } from "@/lib/types";
+import { ROLE_LABEL, type Viewer } from "@/lib/types";
 
-const ROLE_LABEL = { super_admin: "Бош админ", admin: "Админ", viewer: "Фойдаланувчи" } as const;
 
 export function AppShell({ viewer, children }: { viewer: Viewer; children: React.ReactNode }) {
   const items = [

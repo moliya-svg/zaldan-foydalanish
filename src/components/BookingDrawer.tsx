@@ -45,7 +45,7 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
 
   if (!b) return null;
   const color = bookingColor(b);
-  const canEdit = viewer.isSuperAdmin || (viewer.isAdmin && b.created_by === viewer.id);
+  const canEdit = viewer.canManageAll || (viewer.isAdmin && b.created_by === viewer.id);
   const days = new Set(b.slots.map(([a]) => fmtDate(a))).size;
 
   function run(kind: "cancel" | "delete") {
@@ -154,7 +154,7 @@ export function BookingDrawer({ booking: b, viewer, onClose, startWith = null }:
               {viewer.isAdmin && <Link href={`/kiritish?copy=${b.id}`} className="btn btn-ghost" title="Шу брон асосида янгисини яратиш"><Copy className="size-4" />Нусха</Link>}
               <button onClick={downloadIcs} className="btn btn-ghost" title="Телефон календарига қўшиш"><CalendarPlus className="size-4" />.ics</button>
               {canEdit && b.status === "confirmed" && <button onClick={() => setConfirm("cancel")} className="btn btn-ghost text-danger"><Ban className="size-4" />Бекор қилиш</button>}
-              {viewer.isSuperAdmin && <button onClick={() => setConfirm("delete")} className="btn btn-ghost text-danger" aria-label="Ўчириш" title="Ўчириш"><Trash2 className="size-4" /></button>}
+              {viewer.canManageAll && <button onClick={() => setConfirm("delete")} className="btn btn-ghost text-danger" aria-label="Ўчириш" title="Ўчириш"><Trash2 className="size-4" /></button>}
             </div>
           )}
         </div>

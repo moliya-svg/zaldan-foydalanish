@@ -77,7 +77,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
   const isWeekend = (d: number) => weekday(year, month, d) >= 5;
   const showActions = view === "bookings" && viewer.isAdmin;
   const cols = `var(--left) repeat(${n}, minmax(var(--day), 1fr))${showActions ? " var(--act)" : ""}`;
-  const canEdit = (b: Booking) => viewer.isSuperAdmin || (viewer.isAdmin && b.created_by === viewer.id);
+  const canEdit = (b: Booking) => viewer.canManageAll || (viewer.isAdmin && b.created_by === viewer.id);
 
   return (
     <div className="space-y-4">
@@ -208,7 +208,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
                             <Pencil className="size-4" />
                           </Link>
                         )}
-                        {viewer.isSuperAdmin ? (
+                        {viewer.canManageAll ? (
                           <button onClick={() => setOpen(b.id, "delete")} className="rounded-md p-1.5 text-danger hover:bg-red-50 dark:hover:bg-red-950" title="Ўчириш" aria-label={`№${idx + 1} бронни ўчириш`}>
                             <Trash2 className="size-4" />
                           </button>
