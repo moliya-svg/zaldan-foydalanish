@@ -7,7 +7,7 @@ import { monthRange, todayTk, tkParts } from "@/lib/dates";
 import { createClient } from "@/lib/supabase/server";
 import { BookingBoard } from "@/components/BookingBoard";
 
-export const metadata: Metadata = { title: "KO'RISH BRON" };
+export const metadata: Metadata = { title: "Банд зал ва хоналар" };
 
 export default async function KorishPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const viewer = await requireViewer();
