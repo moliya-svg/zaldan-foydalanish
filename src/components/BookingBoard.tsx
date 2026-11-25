@@ -84,7 +84,7 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
       {/* Юқори панел */}
       <div className="card space-y-3 p-3 sm:p-4">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="mr-2 text-xl font-bold text-brand-900 dark:text-white sm:text-2xl">KO&apos;RISH BRON</h1>
+          <h1 className="mr-2 text-xl font-bold text-brand-900 dark:text-white sm:text-2xl">Банд зал ва хоналар</h1>
           <div className="flex items-center rounded-lg border border-line" aria-label="Йил">
             <Link href={href({ y: year - 1 })} className="p-2 hover:bg-canvas" aria-label="Олдинги йил"><ChevronLeft className="size-4" /></Link>
             <span className="min-w-14 text-center font-bold tabular-nums">{year}</span>
@@ -93,14 +93,14 @@ export function BookingBoard({ year, month, view, rooms, bookings, viewer }: {
           <Link href={href({ y: today.y, m: today.m })} className="btn btn-ghost !min-h-9 !py-1.5 text-sm">Бугун</Link>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             {viewer.isAdmin && (
-              <Link href="/kiritish" className="btn btn-primary no-print !min-h-9 !py-1.5 text-sm"><CalendarPlus className="size-4" />KIRITISH BRON</Link>
+              <Link href="/kiritish" className="btn btn-primary no-print !min-h-9 !py-1.5 text-sm"><CalendarPlus className="size-4" />Киритиш</Link>
             )}
             <div className="inline-flex rounded-lg border border-line p-0.5 text-sm" role="tablist">
               <Link href={href({ view: "bookings" })} role="tab" aria-selected={view === "bookings"} className={clsx("flex items-center gap-1.5 rounded-md px-2.5 py-1.5", view === "bookings" ? "bg-brand-900 text-white" : "text-muted")}>
-                <Rows3 className="size-4" /> Бронлар
+                <Rows3 className="size-4" /> Банд қилинган
               </Link>
               <Link href={href({ view: "rooms" })} role="tab" aria-selected={view === "rooms"} className={clsx("flex items-center gap-1.5 rounded-md px-2.5 py-1.5", view === "rooms" ? "bg-brand-900 text-white" : "text-muted")}>
-                <Building2 className="size-4" /> Хоналар
+                <Building2 className="size-4" /> Зал ва хоналар
               </Link>
             </div>
             <button onClick={() => window.print()} className="btn btn-ghost no-print !min-h-9 !px-2.5 !py-1.5" aria-label="Чоп этиш" title="Чоп этиш"><Printer className="size-4" /></button>

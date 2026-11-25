@@ -8,8 +8,8 @@ import { ROLE_LABEL, type Viewer } from "@/lib/types";
 
 export function AppShell({ viewer, children }: { viewer: Viewer; children: React.ReactNode }) {
   const items = [
-    { href: "/korish", label: "KO'RISH BRON", short: "Кўриш", icon: <CalendarRange className="size-5" />, show: true },
-    { href: "/kiritish", label: "KIRITISH BRON", short: "Киритиш", icon: <CalendarPlus className="size-5" />, show: viewer.isAdmin },
+    { href: "/korish", label: "Банд зал ва хоналар", short: "Банд", icon: <CalendarRange className="size-5" />, show: true },
+    { href: "/kiritish", label: "Киритиш", short: "Киритиш", icon: <CalendarPlus className="size-5" />, show: viewer.isAdmin },
     { href: "/utgan", label: "Ўтган тадбирлар", short: "Ўтган", icon: <History className="size-5" />, show: true },
     { href: "/xonalar", label: "Зал ва хоналар", short: "Хоналар", icon: <Building2 className="size-5" />, show: true },
     { href: "/boshqaruv", label: "Бошқарув", short: "Бошқарув", icon: <ShieldCheck className="size-5" />, show: viewer.isSuperAdmin },
@@ -25,7 +25,7 @@ export function AppShell({ viewer, children }: { viewer: Viewer; children: React
           </div>
         </div>
         <div className="mx-auto flex max-w-[1800px] items-center gap-6 px-4 py-3">
-          <Link href="/korish" aria-label="KO'RISH BRON"><Brand light /></Link>
+          <Link href="/korish" aria-label="Банд зал ва хоналар"><Brand light /></Link>
           <nav className="ml-2 hidden flex-1 items-center gap-1 lg:flex" aria-label="Асосий меню">
             {items.map((i) => (
               <NavLink key={i.href} href={i.href} className="flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold text-white/85 hover:bg-white/10 hover:text-white" activeClassName="bg-white/15 text-white shadow-[inset_0_-3px_0_var(--color-gold-500)]">

@@ -7,7 +7,7 @@ import { BookingForm, type FormValues } from "@/components/BookingForm";
 import { tkDate, tkTime, todayTk } from "@/lib/dates";
 import { formatPhone } from "@/lib/phone";
 
-export const metadata: Metadata = { title: "KIRITISH BRON" };
+export const metadata: Metadata = { title: "Киритиш" };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -53,7 +53,7 @@ export default async function KiritishPage({ searchParams }: { searchParams: Pro
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-brand-900 dark:text-white">{editId ? "Бронни таҳрирлаш" : "KIRITISH BRON"}</h1>
+        <h1 className="text-2xl font-bold text-brand-900 dark:text-white">{editId ? "Бронни таҳрирлаш" : "Киритиш"}</h1>
         <p className="text-sm text-muted">Ҳар бир маълумот алоҳида устунда. Банд вақт танланса, тизим дарҳол огоҳлантиради.</p>
       </div>
 
